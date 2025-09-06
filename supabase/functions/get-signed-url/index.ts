@@ -18,6 +18,10 @@ serve(async (req) => {
       throw new Error('Agent ID is required')
     }
 
+    if (agent_id === 'your-agent-id-here' || agent_id === 'your-elevenlabs-agent-id') {
+      throw new Error('Please replace the placeholder agent ID with your actual ElevenLabs Conversational AI agent ID')
+    }
+
     const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY')
     if (!ELEVENLABS_API_KEY) {
       throw new Error('ElevenLabs API key not configured')

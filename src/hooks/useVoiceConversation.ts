@@ -73,21 +73,25 @@ export const useVoiceConversation = ({
       // Request microphone access first
       await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      if (agentId) {
-        // Use provided agent ID for public agents
-        await conversation.startSession({ agentId });
-      } else {
-        // Get signed URL for private agents (if needed in future)
-        const { data, error } = await supabase.functions.invoke('get-signed-url', {
-          body: { agent_id: 'your-agent-id-here' }
-        });
-
-        if (error) {
-          throw new Error(error.message);
-        }
-
-        await conversation.startSession({ url: data.signed_url });
+      if (!agentId) {
+        throw new Error('ElevenLabs agent ID is required. Please create a Conversational AI agent at https://elevenlabs.io/conversational-ai and provide the agent ID.');
       }
+
+      // Get signed URL from our edge function
+      const { data, error } = await supabase.functions.invoke('get-signed-url', {
+        body: { agent_id: agentId }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (!data?.signed_url) {
+        throw new Error('Failed to get signed URL from ElevenLabs');
+      }
+
+      // Start session with signed URL
+      await conversation.startSession({ signedUrl: data.signed_url });
     } catch (error) {
       console.error('Failed to start voice conversation:', error);
       throw error;

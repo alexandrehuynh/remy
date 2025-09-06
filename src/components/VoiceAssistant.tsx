@@ -38,7 +38,8 @@ export function VoiceAssistant({
   const { startConversation, endSession, status, isSpeaking } = useVoiceConversation({
     onStepNavigation,
     onTimerRequest,
-    onRepeatRequest
+    onRepeatRequest,
+    agentId: "your-elevenlabs-agent-id" // Replace with your actual ElevenLabs agent ID
   });
 
   useEffect(() => {
