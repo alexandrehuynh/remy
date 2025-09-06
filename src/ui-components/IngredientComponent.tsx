@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { Ingredient, EllipsisIcon, CheckIcon, XIcon } from '../lib/ui-constants';
-import { Slider } from './Slider';
-import { OrderableItem } from './Orderable';
+import { EllipsisIcon, CheckIcon } from '../lib/ui-constants';
+import { Edit, Trash2 } from 'lucide-react';
+import { Ingredient } from '../lib/ui-constants';
+import { motion, Reorder, useDragControls } from 'framer-motion';
+import { BurgerIcon } from '../lib/ui-constants';
 
 interface IngredientComponentProps {
   ingredient: Ingredient;
   onEdit?: () => void;
   onDelete?: () => void;
-  onMarkDone?: (done: boolean) => void;
+  onMarkDone?: () => void;
   isSliderEnabled?: boolean;
   isOrderable?: boolean;
   showOptions?: boolean;
@@ -23,99 +25,191 @@ export const IngredientComponent: React.FC<IngredientComponentProps> = ({
   showOptions = true
 }) => {
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [dragPosition, setDragPosition] = useState(0);
+  const [hasTriggeredLeft, setHasTriggeredLeft] = useState(false);
+  const [hasTriggeredRight, setHasTriggeredRight] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragControls = useDragControls();
+
+  const handleOptionsClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowOptionsMenu(!showOptionsMenu);
+  };
+
+  const handleEdit = () => {
+    onEdit?.();
+    setShowOptionsMenu(false);
+  };
+
+  const handleDelete = () => {
+    onDelete?.();
+    setShowOptionsMenu(false);
+  };
 
   const handleMarkDone = () => {
-    onMarkDone?.(true);
+    onMarkDone?.();
     setShowOptionsMenu(false);
   };
 
-  const handleMarkUndone = () => {
-    onMarkDone?.(false);
-    setShowOptionsMenu(false);
+  const handleContentClick = () => {
+    if (!isDragging && Math.abs(dragPosition) < 5) {
+      onEdit?.();
+    }
   };
 
-  const content = (
-    <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200">
-      <div className="flex-1 text-left pl-4">
-        <div className={`font-medium ${ingredient.markedDone ? 'line-through text-gray-400' : 'text-gray-800'}`}>
-          {ingredient.name}
+  const handleDrag = (event: any, info: any) => {
+    if (!isSliderEnabled) return;
+    
+    const containerWidth = 300; // Approximate container width
+    const maxLeftDrag = -(containerWidth * 30 / 100);
+    const maxRightDrag = (containerWidth * 30 / 100);
+
+    let newPosition = info.offset.x;
+
+    if (newPosition < maxLeftDrag) newPosition = maxLeftDrag;
+    if (newPosition > maxRightDrag) newPosition = maxRightDrag;
+    if (newPosition > 0 && newPosition < 0) newPosition = 0;
+
+    setDragPosition(newPosition);
+
+    if (newPosition <= maxLeftDrag && !hasTriggeredLeft) {
+      setHasTriggeredLeft(true);
+      onDelete?.();
+    }
+    if (newPosition >= maxRightDrag && !hasTriggeredRight) {
+      setHasTriggeredRight(true);
+      onMarkDone?.();
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDragPosition(0);
+    setHasTriggeredLeft(false);
+    setHasTriggeredRight(false);
+    setIsDragging(false);
+  };
+
+  const handleDragStart = () => {
+    setIsDragging(true);
+  };
+
+  const renderContent = () => (
+    <div className="relative overflow-hidden">
+      {/* Left background */}
+      {isSliderEnabled && (
+        <div 
+          className="absolute left-0 top-0 h-full flex items-center justify-start pl-4"
+          style={{ 
+            backgroundColor: "#ef4444",
+            width: "30%",
+            opacity: dragPosition < 0 ? Math.abs(dragPosition) / 90 : 0
+          }}
+        >
+          <Trash2 className="w-6 h-6 text-white" />
         </div>
-        <div className={`text-sm ${ingredient.markedDone ? 'line-through text-gray-300' : 'text-gray-600'}`}>
-          {ingredient.amount}
-        </div>
-      </div>
+      )}
       
-      {showOptions && (
-        <div className="relative">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowOptionsMenu(!showOptionsMenu);
-            }}
-            className="p-2 hover:bg-gray-100 rounded"
-          >
-            <EllipsisIcon className="w-5 h-5 text-gray-500" />
-          </button>
+      {/* Right background */}
+      {isSliderEnabled && (
+        <div 
+          className="absolute right-0 top-0 h-full flex items-center justify-end pr-4"
+          style={{ 
+            backgroundColor: "#10b981",
+            width: "30%",
+            opacity: dragPosition > 0 ? dragPosition / 90 : 0
+          }}
+        >
+          <CheckIcon className="w-6 h-6 text-white" />
+        </div>
+      )}
+
+      <motion.div
+        drag={isSliderEnabled ? "x" : false}
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0}
+        onDrag={handleDrag}
+        onDragEnd={handleDragEnd}
+        onDragStart={handleDragStart}
+        animate={{ x: dragPosition }}
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        className="relative z-10"
+        onClick={handleContentClick}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white">
+          <div className="flex-1">
+            <div className={`font-medium ${ingredient.markedDone ? 'line-through text-gray-400' : ''}`}>
+              {ingredient.name}
+            </div>
+            <div className="text-sm text-gray-500">{ingredient.amount}</div>
+          </div>
           
-          {showOptionsMenu && (
-            <div className="fixed right-4 top-1/2 transform -translate-y-1/2 bg-white border border-gray-200 rounded-lg shadow-lg z-[999999] min-w-[120px]">
+          {isOrderable && (
+            <div
+              className="flex items-center justify-center p-3 cursor-grab active:cursor-grabbing"
+              style={{ touchAction: 'none' }}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                dragControls.start(e);
+              }}
+            >
+              <BurgerIcon className="w-6 h-6 text-gray-400" />
+            </div>
+          )}
+          
+          {showOptions && !isOrderable && (
+            <div className="relative">
               <button
-                onClick={() => {
-                  onEdit?.();
-                  setShowOptionsMenu(false);
-                }}
-                className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                onClick={handleOptionsClick}
+                className="p-2 text-gray-400 hover:text-gray-600"
               >
-                Edit
-              </button>
-              <button
-                onClick={() => {
-                  onDelete?.();
-                  setShowOptionsMenu(false);
-                }}
-                className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-600"
-              >
-                Delete
-              </button>
-              <button
-                onClick={handleMarkDone}
-                className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
-              >
-                Mark Done
+                <EllipsisIcon className="w-5 h-5" />
               </button>
             </div>
           )}
+        </div>
+      </motion.div>
+      
+      {showOptionsMenu && (
+        <div className="fixed right-4 bg-white border rounded-lg shadow-lg py-1 min-w-[120px] z-[9999]"
+             style={{ top: '50%', transform: 'translateY(-50%)' }}>
+          <button
+            onClick={handleEdit}
+            className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+          >
+            <Edit className="w-4 h-4" />
+            Edit
+          </button>
+          <button
+            onClick={handleDelete}
+            className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete
+          </button>
+          <button
+            onClick={handleMarkDone}
+            className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+          >
+            <CheckIcon className="w-4 h-4" />
+            {ingredient.markedDone ? 'Mark Undone' : 'Mark Done'}
+          </button>
         </div>
       )}
     </div>
   );
 
-  let wrappedContent = content;
-
-  if (isSliderEnabled) {
-    wrappedContent = (
-      <Slider
-        bgColor1="rgb(34, 197, 94)"
-        bgColor2="rgb(239, 68, 68)"
-        percentageLeft={20}
-        percentageRight={20}
-        onPress1={handleMarkDone}
-        onPress2={handleMarkUndone}
-        icon1={CheckIcon}
-        icon2={XIcon}
-      >
-        {content}
-      </Slider>
-    );
-  }
-
   if (isOrderable) {
-    wrappedContent = (
-      <OrderableItem item={ingredient}>
-        {wrappedContent}
-      </OrderableItem>
+    return (
+      <Reorder.Item 
+        value={ingredient} 
+        dragListener={false}
+        dragControls={dragControls}
+        className="relative"
+      >
+        {renderContent()}
+      </Reorder.Item>
     );
   }
 
-  return wrappedContent;
+  return renderContent();
 };

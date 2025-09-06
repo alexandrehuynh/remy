@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { sampleRecipes, textSizes, Recipe, Ingredient, Instruction } from '../lib/ui-constants';
 import { IngredientComponent } from '../ui-components/IngredientComponent';
 import { InstructionComponent } from '../ui-components/InstructionComponent';
-import { OrderableList } from '../ui-components/Orderable';
 import { IngredientEditModal } from '../modals/IngredientEditModal';
 import { InstructionEditModal } from '../modals/InstructionEditModal';
+import { Reorder } from 'framer-motion';
 
 interface UIEditRecipeProps {
   recipe?: Recipe | null;
@@ -23,6 +23,7 @@ export const UIEditRecipe: React.FC<UIEditRecipeProps> = ({
   const [showIngredientModal, setShowIngredientModal] = useState(false);
   const [showInstructionModal, setShowInstructionModal] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
 
   const handleEditIngredient = (ingredient: Ingredient) => {
     setEditingIngredient(ingredient);
@@ -97,12 +98,32 @@ export const UIEditRecipe: React.FC<UIEditRecipeProps> = ({
     onCook?.(recipe);
   };
 
+  const handleBack = () => {
+    if (hasChanges) {
+      setShowUnsavedModal(true);
+    } else {
+      onBack?.();
+    }
+  };
+
+  const handleDiscardChanges = () => {
+    setHasChanges(false);
+    setShowUnsavedModal(false);
+    onBack?.();
+  };
+
+  const handleSaveAndBack = () => {
+    handleSaveChanges();
+    setShowUnsavedModal(false);
+    onBack?.();
+  };
+
   return (
     <div className="flex flex-col h-full bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm p-4">
         <div className="flex items-center justify-between mb-4">
-          <button onClick={onBack} className="text-blue-500">← Back</button>
+          <button onClick={handleBack} className="text-blue-500">← Back</button>
           <h1 className={`${textSizes.title} font-bold text-center`}>{recipe.name}</h1>
           <div></div>
         </div>
@@ -129,27 +150,30 @@ export const UIEditRecipe: React.FC<UIEditRecipeProps> = ({
                 setEditingIngredient(null);
                 setShowIngredientModal(true);
               }}
-              className="text-blue-500 text-lg"
-              style={{ color: 'hsl(220, 90%, 56%)' }}
+              className="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm font-medium"
+              style={{ backgroundColor: 'hsl(220, 90%, 56%)' }}
             >
               + Add
             </button>
           </div>
           <div className="bg-white rounded-lg overflow-hidden">
-            <OrderableList
-              items={recipe.ingredients}
+            <Reorder.Group 
+              axis="y" 
+              values={recipe.ingredients} 
               onReorder={handleReorderIngredients}
+              className="space-y-0"
             >
-              {(ingredient: Ingredient, index: number) => (
+              {recipe.ingredients.map((ingredient: Ingredient, index: number) => (
                 <IngredientComponent
+                  key={ingredient.name + index}
                   ingredient={ingredient}
                   isSliderEnabled={true}
-                  isOrderable={false}
+                  isOrderable={true}
                   onEdit={() => handleEditIngredient(ingredient)}
                   onDelete={() => handleDeleteIngredient(ingredient)}
                 />
-              )}
-            </OrderableList>
+              ))}
+            </Reorder.Group>
           </div>
         </div>
 
@@ -162,27 +186,30 @@ export const UIEditRecipe: React.FC<UIEditRecipeProps> = ({
                 setEditingInstruction(null);
                 setShowInstructionModal(true);
               }}
-              className="text-blue-500 text-lg"
-              style={{ color: 'hsl(220, 90%, 56%)' }}
+              className="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm font-medium"
+              style={{ backgroundColor: 'hsl(220, 90%, 56%)' }}
             >
               + Add
             </button>
           </div>
           <div className="bg-white rounded-lg overflow-hidden">
-            <OrderableList
-              items={recipe.instructions}
+            <Reorder.Group 
+              axis="y" 
+              values={recipe.instructions} 
               onReorder={handleReorderInstructions}
+              className="space-y-0"
             >
-              {(instruction: Instruction, index: number) => (
+              {recipe.instructions.map((instruction: Instruction, index: number) => (
                 <InstructionComponent
+                  key={instruction.instruction + index}
                   instruction={instruction}
                   isSliderEnabled={true}
-                  isOrderable={false}
+                  isOrderable={true}
                   onEdit={() => handleEditInstruction(instruction)}
                   onDelete={() => handleDeleteInstruction(instruction)}
                 />
-              )}
-            </OrderableList>
+              ))}
+            </Reorder.Group>
           </div>
         </div>
       </div>
@@ -227,6 +254,31 @@ export const UIEditRecipe: React.FC<UIEditRecipeProps> = ({
         onSave={handleSaveInstruction}
         instruction={editingInstruction || undefined}
       />
+
+      {/* Unsaved Changes Modal */}
+      {showUnsavedModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+            <h3 className="text-lg font-semibold mb-2">Unsaved Changes</h3>
+            <p className="text-gray-600 mb-4">You have unsaved changes. What would you like to do?</p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleDiscardChanges}
+                className="flex-1 py-2 px-4 border border-gray-300 rounded-lg text-gray-700"
+              >
+                Discard
+              </button>
+              <button
+                onClick={handleSaveAndBack}
+                className="flex-1 py-2 px-4 bg-blue-500 text-white rounded-lg"
+                style={{ backgroundColor: 'hsl(220, 90%, 56%)' }}
+              >
+                Save & Exit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

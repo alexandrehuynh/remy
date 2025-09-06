@@ -96,7 +96,7 @@ export const UIRecipes: React.FC<UIRecipesProps> = ({
         </div>
         
         {/* Category Pills for Row Mode */}
-        {viewMode === 'rows' && (
+        {viewMode === 'rows' && !selectedCategory && (
           <div className="px-4 pb-4">
             <div className="flex gap-2 overflow-x-auto">
               {categories.filter(cat => cat.name !== '+').map((category) => (
@@ -125,20 +125,23 @@ export const UIRecipes: React.FC<UIRecipesProps> = ({
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         {selectedCategory ? (
-          /* Category Recipe List */
-          <div className="p-4 space-y-3">
-            {filteredRecipes.map((recipe) => (
-              <button
-                key={recipe.name}
-                onClick={() => handleRecipeClick(recipe)}
-                className="w-full flex items-center p-4 bg-white rounded-lg border text-left hover:bg-gray-50"
-              >
-                <div className="flex-1">
-                  <div className="font-medium text-gray-800">{recipe.name}</div>
-                  <div className="text-sm text-gray-600">{recipe.timeToCook}</div>
-                </div>
-              </button>
-            ))}
+          /* Category Recipe List - Card View */
+          <div className="p-4">
+            <div className="grid grid-cols-2 gap-4">
+              {filteredRecipes.map((recipe) => (
+                <button
+                  key={recipe.name}
+                  onClick={() => handleRecipeClick(recipe)}
+                  className="flex flex-col p-4 bg-white rounded-lg border text-left hover:bg-gray-50 aspect-square"
+                >
+                  <div className="flex-1 flex items-center justify-center bg-gray-100 rounded mb-2">
+                    <span className="text-gray-400 text-sm">Recipe Image</span>
+                  </div>
+                  <div className="font-medium text-gray-800 text-sm">{recipe.name}</div>
+                  <div className="text-xs text-gray-600">{recipe.timeToCook}</div>
+                </button>
+              ))}
+            </div>
           </div>
         ) : viewMode === 'cards' ? (
           /* Cards View */
