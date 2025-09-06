@@ -3,7 +3,19 @@ import { categories, sampleRecipes, CardViewIcon, RowViewIcon, SearchIcon, Ellip
 import { CategoryCard } from '../ui-components/CategoryCard';
 import { CategoryModal } from '../modals/CategoryModal';
 
-export const UIRecipes: React.FC = () => {
+interface UIRecipesProps {
+  selectedCategory?: string;
+  onCategorySelect?: (categoryName: string) => void;
+  onRecipeSelect?: (recipe: any) => void;
+  onBack?: () => void;
+}
+
+export const UIRecipes: React.FC<UIRecipesProps> = ({ 
+  selectedCategory, 
+  onCategorySelect, 
+  onRecipeSelect, 
+  onBack 
+}) => {
   const [viewMode, setViewMode] = useState<'cards' | 'rows'>('cards');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -16,8 +28,7 @@ export const UIRecipes: React.FC = () => {
     }
     
     if (viewMode === 'cards') {
-      // Navigate to category view
-      console.log('Navigate to category:', categoryName);
+      onCategorySelect?.(categoryName);
     } else {
       // Toggle category selection for filtering
       setSelectedCategories(prev => 
@@ -28,11 +39,17 @@ export const UIRecipes: React.FC = () => {
     }
   };
 
+  const handleRecipeClick = (recipe: any) => {
+    onRecipeSelect?.(recipe);
+  };
+
   const handleAddCategory = (categoryName: string) => {
     console.log('Added new category:', categoryName);
   };
 
-  const filteredRecipes = viewMode === 'rows' && selectedCategories.length > 0
+  const filteredRecipes = selectedCategory 
+    ? sampleRecipes.filter(recipe => recipe.category === selectedCategory)
+    : viewMode === 'rows' && selectedCategories.length > 0
     ? sampleRecipes.filter(recipe => selectedCategories.includes(recipe.category))
     : sampleRecipes;
 
@@ -49,18 +66,26 @@ export const UIRecipes: React.FC = () => {
       {/* Header */}
       <div className="bg-white shadow-sm">
         <div className="flex items-center justify-between p-4">
-          <button
-            onClick={() => setViewMode(viewMode === 'cards' ? 'rows' : 'cards')}
-            className="p-2"
-          >
-            {viewMode === 'cards' ? (
-              <RowViewIcon className="w-6 h-6" />
-            ) : (
-              <CardViewIcon className="w-6 h-6" />
-            )}
-          </button>
+          {selectedCategory ? (
+            <button onClick={onBack} className="p-2">
+              ←
+            </button>
+          ) : (
+            <button
+              onClick={() => setViewMode(viewMode === 'cards' ? 'rows' : 'cards')}
+              className="p-2"
+            >
+              {viewMode === 'cards' ? (
+                <RowViewIcon className="w-6 h-6" />
+              ) : (
+                <CardViewIcon className="w-6 h-6" />
+              )}
+            </button>
+          )}
           
-          <h1 className={`${textSizes.large} font-bold`}>My Recipes</h1>
+          <h1 className={`${textSizes.large} font-bold`}>
+            {selectedCategory ? selectedCategory : 'My Recipes'}
+          </h1>
           
           <button
             onClick={() => setShowSearch(!showSearch)}
@@ -99,7 +124,23 @@ export const UIRecipes: React.FC = () => {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
-        {viewMode === 'cards' ? (
+        {selectedCategory ? (
+          /* Category Recipe List */
+          <div className="p-4 space-y-3">
+            {filteredRecipes.map((recipe) => (
+              <button
+                key={recipe.name}
+                onClick={() => handleRecipeClick(recipe)}
+                className="w-full flex items-center p-4 bg-white rounded-lg border text-left hover:bg-gray-50"
+              >
+                <div className="flex-1">
+                  <div className="font-medium text-gray-800">{recipe.name}</div>
+                  <div className="text-sm text-gray-600">{recipe.timeToCook}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : viewMode === 'cards' ? (
           /* Cards View */
           <div className="p-4">
             <div className="grid grid-cols-2 gap-4">
@@ -123,18 +164,27 @@ export const UIRecipes: React.FC = () => {
                 </h2>
                 <div className="space-y-1">
                   {recipes.map((recipe) => (
-                    <div key={recipe.name} className="flex items-center justify-between p-4 bg-white rounded-lg border">
-                      <div className="flex-1 text-left pl-4">
+                    <button
+                      key={recipe.name}
+                      onClick={() => handleRecipeClick(recipe)}
+                      className="w-full flex items-center justify-between p-4 bg-white rounded-lg border text-left hover:bg-gray-50"
+                    >
+                      <div className="flex-1 pl-4">
                         <div className="font-medium text-gray-800">{recipe.name}</div>
                         <div className="text-sm text-gray-600">{recipe.timeToCook}</div>
                       </div>
-                      <div className="relative">
-                        <button className="p-2 hover:bg-gray-100 rounded">
+                      <div className="relative z-[9999]">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Options menu would appear here
+                          }}
+                          className="p-2 hover:bg-gray-100 rounded"
+                        >
                           <EllipsisIcon className="w-5 h-5 text-gray-500" />
                         </button>
-                        {/* Options menu would appear here */}
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>

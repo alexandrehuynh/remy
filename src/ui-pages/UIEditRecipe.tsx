@@ -5,8 +5,18 @@ import { InstructionComponent } from '../ui-components/InstructionComponent';
 import { IngredientEditModal } from '../modals/IngredientEditModal';
 import { InstructionEditModal } from '../modals/InstructionEditModal';
 
-export const UIEditRecipe: React.FC = () => {
-  const [recipe, setRecipe] = useState<Recipe>(sampleRecipes[0]);
+interface UIEditRecipeProps {
+  recipe?: Recipe | null;
+  onBack?: () => void;
+  onCook?: (recipe: Recipe) => void;
+}
+
+export const UIEditRecipe: React.FC<UIEditRecipeProps> = ({ 
+  recipe: initialRecipe, 
+  onBack, 
+  onCook 
+}) => {
+  const [recipe, setRecipe] = useState<Recipe>(initialRecipe || sampleRecipes[0]);
   const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null);
   const [editingInstruction, setEditingInstruction] = useState<Instruction | null>(null);
   const [showIngredientModal, setShowIngredientModal] = useState(false);
@@ -67,7 +77,7 @@ export const UIEditRecipe: React.FC = () => {
   };
 
   const handleStartCooking = () => {
-    console.log('Starting cooking mode with recipe:', recipe.name);
+    onCook?.(recipe);
   };
 
   return (
@@ -75,7 +85,7 @@ export const UIEditRecipe: React.FC = () => {
       {/* Header */}
       <div className="bg-white shadow-sm p-4">
         <div className="flex items-center justify-between mb-4">
-          <button className="text-blue-500">← Back</button>
+          <button onClick={onBack} className="text-blue-500">← Back</button>
           <h1 className={`${textSizes.title} font-bold text-center`}>{recipe.name}</h1>
           <div></div>
         </div>

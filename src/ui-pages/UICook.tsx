@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { sampleRecipes, textSizes, Recipe } from '../lib/ui-constants';
+import { sampleRecipes, textSizes, Recipe, createOptions } from '../lib/ui-constants';
 import { IngredientComponent } from '../ui-components/IngredientComponent';
 import { InstructionComponent } from '../ui-components/InstructionComponent';
 
-export const UICook: React.FC = () => {
-  const [activeRecipe, setActiveRecipe] = useState<Recipe | null>(null);
+interface UICookProps {
+  selectedRecipe?: Recipe | null;
+}
+
+export const UICook: React.FC<UICookProps> = ({ selectedRecipe }) => {
+  const [activeRecipe, setActiveRecipe] = useState<Recipe | null>(selectedRecipe || null);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Auto-sliding carousel
+  // Auto-sliding carousel with infinite scrolling
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % sampleRecipes.length);
+      setCurrentSlide((prev) => (prev + 1) % (sampleRecipes.length * 2));
     }, 3000);
 
     return () => clearInterval(interval);
@@ -89,12 +93,13 @@ export const UICook: React.FC = () => {
           Choose one of your Recipes
         </h1>
         
-        <div className="relative w-64 h-48 rounded-lg overflow-hidden shadow-lg">
+        <div className="relative w-64 h-48 rounded-lg overflow-hidden shadow-lg mx-auto">
           <div 
             className="flex transition-transform duration-500 ease-in-out h-full"
-            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+            style={{ transform: `translateX(-${(currentSlide % sampleRecipes.length) * 100}%)` }}
           >
-            {sampleRecipes.map((recipe, index) => (
+            {/* Create infinite loop by duplicating recipes */}
+            {[...sampleRecipes, ...sampleRecipes].map((recipe, index) => (
               <button
                 key={index}
                 onClick={() => handleRecipeSelect(recipe)}
@@ -104,11 +109,7 @@ export const UICook: React.FC = () => {
                   backgroundColor: 'hsl(220, 90%, 56%)'
                 }}
               >
-                <div className="absolute inset-0 bg-black bg-opacity-30 flex items-end">
-                  <div className="p-4 text-white">
-                    <h3 className="font-semibold">{recipe.name}</h3>
-                  </div>
-                </div>
+                <div className="absolute inset-0 bg-black bg-opacity-30"></div>
               </button>
             ))}
           </div>
@@ -117,28 +118,21 @@ export const UICook: React.FC = () => {
 
       {/* Create New Recipe */}
       <div className="w-full max-w-md">
-        <h2 className={`${textSizes.large} font-bold text-center mb-4`}>
+        <h2 className={`${textSizes.title} font-bold text-center mb-4`}>
           Or Create a New One!
         </h2>
         
         <div className="grid grid-cols-2 gap-4">
-          {/* Simplified create options */}
-          <button className="p-4 bg-white rounded-lg shadow-sm text-center">
-            <div className="text-2xl mb-2">📷</div>
-            <div className="text-sm font-medium">Upload Image</div>
-          </button>
-          <button className="p-4 bg-white rounded-lg shadow-sm text-center">
-            <div className="text-2xl mb-2">✏️</div>
-            <div className="text-sm font-medium">Create Recipe</div>
-          </button>
-          <button className="p-4 bg-white rounded-lg shadow-sm text-center">
-            <div className="text-2xl mb-2">✨</div>
-            <div className="text-sm font-medium">Generate Recipe</div>
-          </button>
-          <button className="p-4 bg-white rounded-lg shadow-sm text-center">
-            <div className="text-2xl mb-2">🔍</div>
-            <div className="text-sm font-medium">Web Search</div>
-          </button>
+          {/* All create options from constants */}
+          {createOptions.map((option, index) => {
+            const Icon = option.icon;
+            return (
+              <button key={index} className="p-4 bg-white rounded-lg shadow-sm text-center">
+                <Icon className="w-8 h-8 mx-auto mb-2" />
+                <div className="text-sm font-medium">{option.primaryText}</div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

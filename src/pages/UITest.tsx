@@ -3,32 +3,60 @@ import { UIRecipes } from '../ui-pages/UIRecipes';
 import { UICook } from '../ui-pages/UICook';
 import { UIEditRecipe } from '../ui-pages/UIEditRecipe';
 import { CreateModal } from '../modals/CreateModal';
-import { PlusIcon } from '../lib/ui-constants';
+import { PlusIcon, Recipe } from '../lib/ui-constants';
 
-type Tab = 'recipes' | 'cook' | 'create' | 'edit';
+type Tab = 'recipes' | 'cook' | 'edit';
+type Page = 'recipes' | 'cook' | 'edit' | 'category' | 'recipe-edit';
 
 export const UITest: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('recipes');
+  const [currentPage, setCurrentPage] = useState<Page>('recipes');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
 
   const handleTabClick = (tab: Tab) => {
-    if (tab === 'create') {
-      setShowCreateModal(true);
-    } else {
-      setActiveTab(tab);
-    }
+    setActiveTab(tab);
+    setCurrentPage(tab);
+  };
+
+  const handleCreateClick = () => {
+    setShowCreateModal(true);
+  };
+
+  const handleCategorySelect = (categoryName: string) => {
+    setSelectedCategory(categoryName);
+    setCurrentPage('category');
+  };
+
+  const handleRecipeSelect = (recipe: Recipe) => {
+    setSelectedRecipe(recipe);
+    setCurrentPage('recipe-edit');
+  };
+
+  const handleBackToRecipes = () => {
+    setCurrentPage('recipes');
+    setActiveTab('recipes');
+  };
+
+  const handleCookWithRecipe = (recipe: Recipe) => {
+    setSelectedRecipe(recipe);
+    setActiveTab('cook');
+    setCurrentPage('cook');
   };
 
   const renderContent = () => {
-    switch (activeTab) {
+    switch (currentPage) {
       case 'recipes':
-        return <UIRecipes />;
+        return <UIRecipes onCategorySelect={handleCategorySelect} onRecipeSelect={handleRecipeSelect} />;
+      case 'category':
+        return <UIRecipes selectedCategory={selectedCategory} onCategorySelect={handleCategorySelect} onRecipeSelect={handleRecipeSelect} onBack={handleBackToRecipes} />;
       case 'cook':
-        return <UICook />;
-      case 'edit':
-        return <UIEditRecipe />;
+        return <UICook selectedRecipe={selectedRecipe} />;
+      case 'recipe-edit':
+        return <UIEditRecipe recipe={selectedRecipe} onBack={handleBackToRecipes} onCook={handleCookWithRecipe} />;
       default:
-        return <UIRecipes />;
+        return <UIRecipes onCategorySelect={handleCategorySelect} onRecipeSelect={handleRecipeSelect} />;
     }
   };
 
@@ -65,23 +93,11 @@ export const UITest: React.FC = () => {
           </button>
 
           <button
-            onClick={() => handleTabClick('create')}
+            onClick={handleCreateClick}
             className="flex flex-col items-center py-2 px-3 rounded-lg text-gray-500"
           >
             <PlusIcon className="w-6 h-6 mb-1" />
             <span className="text-xs">Create</span>
-          </button>
-
-          {/* Debug button for Edit page */}
-          <button
-            onClick={() => handleTabClick('edit')}
-            className={`flex flex-col items-center py-2 px-3 rounded-lg ${
-              activeTab === 'edit' ? 'text-blue-500' : 'text-gray-500'
-            }`}
-            style={{ color: activeTab === 'edit' ? 'hsl(220, 90%, 56%)' : undefined }}
-          >
-            <div className="text-2xl mb-1">✏️</div>
-            <span className="text-xs">Edit</span>
           </button>
         </div>
       </div>

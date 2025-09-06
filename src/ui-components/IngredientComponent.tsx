@@ -58,7 +58,7 @@ export const IngredientComponent: React.FC<IngredientComponentProps> = ({
           </button>
           
           {showOptionsMenu && (
-            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-[100] min-w-[120px]">
+            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-[99999] min-w-[120px]">
               <button
                 onClick={() => {
                   onEdit?.();
