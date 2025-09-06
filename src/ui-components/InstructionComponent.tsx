@@ -64,7 +64,7 @@ export const InstructionComponent: React.FC<InstructionComponentProps> = ({
           </button>
           
           {showOptionsMenu && (
-            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-[99999] min-w-[120px]">
+            <div className="fixed right-4 top-1/2 transform -translate-y-1/2 bg-white border border-gray-200 rounded-lg shadow-lg z-[999999] min-w-[120px]">
               <button
                 onClick={() => {
                   onEdit?.();
