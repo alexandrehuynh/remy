@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { sampleRecipes, textSizes, Recipe, Ingredient, Instruction } from '../lib/ui-constants';
 import { IngredientComponent } from '../ui-components/IngredientComponent';
 import { InstructionComponent } from '../ui-components/InstructionComponent';
+import { OrderableList } from '../ui-components/Orderable';
 import { IngredientEditModal } from '../modals/IngredientEditModal';
 import { InstructionEditModal } from '../modals/InstructionEditModal';
 
@@ -71,6 +72,22 @@ export const UIEditRecipe: React.FC<UIEditRecipeProps> = ({
     setHasChanges(true);
   };
 
+  const handleReorderIngredients = (newIngredients: Ingredient[]) => {
+    setRecipe(prev => ({
+      ...prev,
+      ingredients: newIngredients
+    }));
+    setHasChanges(true);
+  };
+
+  const handleReorderInstructions = (newInstructions: Instruction[]) => {
+    setRecipe(prev => ({
+      ...prev,
+      instructions: newInstructions.map((inst, index) => ({ ...inst, order: index + 1 }))
+    }));
+    setHasChanges(true);
+  };
+
   const handleSaveChanges = () => {
     console.log('Saving recipe changes:', recipe);
     setHasChanges(false);
@@ -119,16 +136,20 @@ export const UIEditRecipe: React.FC<UIEditRecipeProps> = ({
             </button>
           </div>
           <div className="bg-white rounded-lg overflow-hidden">
-            {recipe.ingredients.map((ingredient, index) => (
-              <IngredientComponent
-                key={index}
-                ingredient={ingredient}
-                isSliderEnabled={true}
-                isOrderable={true}
-                onEdit={() => handleEditIngredient(ingredient)}
-                onDelete={() => handleDeleteIngredient(ingredient)}
-              />
-            ))}
+            <OrderableList
+              items={recipe.ingredients}
+              onReorder={handleReorderIngredients}
+            >
+              {(ingredient: Ingredient, index: number) => (
+                <IngredientComponent
+                  ingredient={ingredient}
+                  isSliderEnabled={true}
+                  isOrderable={false}
+                  onEdit={() => handleEditIngredient(ingredient)}
+                  onDelete={() => handleDeleteIngredient(ingredient)}
+                />
+              )}
+            </OrderableList>
           </div>
         </div>
 
@@ -148,16 +169,20 @@ export const UIEditRecipe: React.FC<UIEditRecipeProps> = ({
             </button>
           </div>
           <div className="bg-white rounded-lg overflow-hidden">
-            {recipe.instructions.map((instruction, index) => (
-              <InstructionComponent
-                key={index}
-                instruction={instruction}
-                isSliderEnabled={true}
-                isOrderable={true}
-                onEdit={() => handleEditInstruction(instruction)}
-                onDelete={() => handleDeleteInstruction(instruction)}
-              />
-            ))}
+            <OrderableList
+              items={recipe.instructions}
+              onReorder={handleReorderInstructions}
+            >
+              {(instruction: Instruction, index: number) => (
+                <InstructionComponent
+                  instruction={instruction}
+                  isSliderEnabled={true}
+                  isOrderable={false}
+                  onEdit={() => handleEditInstruction(instruction)}
+                  onDelete={() => handleDeleteInstruction(instruction)}
+                />
+              )}
+            </OrderableList>
           </div>
         </div>
       </div>

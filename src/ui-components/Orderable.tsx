@@ -1,5 +1,5 @@
 import React from 'react';
-import { Reorder } from 'framer-motion';
+import { Reorder, useDragControls } from 'framer-motion';
 import { BurgerIcon } from '../lib/ui-constants';
 
 interface OrderableItemProps {
@@ -13,25 +13,33 @@ export const OrderableItem: React.FC<OrderableItemProps> = ({
   children,
   isDragDisabled = false
 }) => {
+  const dragControls = useDragControls();
+
   return (
     <Reorder.Item 
       value={item} 
       dragListener={false}
-      className="relative flex items-center"
+      dragControls={dragControls}
+      className="relative"
     >
-      {/* Content */}
-      <div className="flex-1">{children}</div>
+      <div className="flex items-center">
+        {/* Content */}
+        <div className="flex-1">{children}</div>
 
-      {/* Burger Icon - only this should trigger drag */}
-      <Reorder.Item
-        value={item}
-        as="div"
-        className="flex items-center justify-center p-3 cursor-grab active:cursor-grabbing"
-        style={{ touchAction: 'none' }}
-        dragListener={!isDragDisabled}
-      >
-        <BurgerIcon className="w-6 h-6 text-gray-400" />
-      </Reorder.Item>
+        {/* Burger Icon - only this should trigger drag */}
+        <div
+          className="flex items-center justify-center p-3 cursor-grab active:cursor-grabbing"
+          style={{ touchAction: 'none' }}
+          onPointerDown={(e) => {
+            if (!isDragDisabled) {
+              e.preventDefault();
+              dragControls.start(e);
+            }
+          }}
+        >
+          <BurgerIcon className="w-6 h-6 text-gray-400" />
+        </div>
+      </div>
     </Reorder.Item>
   );
 };
