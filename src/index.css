@@ -8,51 +8,72 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Kitchen-inspired color palette */
+    --background: 35 20% 97%;
+    --foreground: 25 15% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 25 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 25 15% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Warm orange primary - perfect for cooking */
+    --primary: 25 95% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 25 100% 65%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Rich brown secondary */
+    --secondary: 25 25% 85%;
+    --secondary-foreground: 25 15% 25%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 35 15% 92%;
+    --muted-foreground: 25 10% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 35 80% 88%;
+    --accent-foreground: 25 15% 25%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 35 20% 88%;
+    --input: 35 20% 88%;
+    --ring: 25 95% 55%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Voice assistant colors */
+    --voice-active: 25 95% 55%;
+    --voice-listening: 200 80% 60%;
+    --voice-processing: 60 80% 55%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Cooking specific colors */
+    --timer: 0 85% 60%;
+    --success: 120 60% 50%;
+    --warning: 45 100% 55%;
 
-    --sidebar-primary: 240 5.9% 10%;
+    /* Beautiful gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-sunset: linear-gradient(135deg, hsl(25 95% 55%), hsl(35 90% 65%), hsl(45 85% 75%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(35 15% 97%));
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    /* Shadows with warm tones */
+    --shadow-warm: 0 10px 30px -10px hsl(var(--primary) / 0.2);
+    --shadow-card: 0 4px 20px -4px hsl(25 25% 15% / 0.1);
+    --shadow-glow: 0 0 30px hsl(var(--primary-glow) / 0.3);
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 35 15% 95%;
+    --sidebar-foreground: 25 15% 25%;
+    --sidebar-primary: 25 95% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 35 20% 90%;
+    --sidebar-accent-foreground: 25 15% 25%;
+    --sidebar-border: 35 20% 85%;
+    --sidebar-ring: 25 95% 55%;
   }
 
   .dark {
@@ -100,6 +121,95 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+@layer components {
+  /* Voice Assistant Animations */
+  .voice-pulse {
+    @apply animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite];
+  }
+
+  .voice-listening {
+    @apply animate-[ping_1s_cubic-bezier(0,0,0.2,1)_infinite];
+  }
+
+  /* Kitchen-friendly button variants */
+  .btn-hero {
+    @apply bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-warm hover:shadow-glow;
+    transition: var(--transition-smooth);
+  }
+
+  .btn-cooking {
+    @apply bg-card text-card-foreground shadow-card hover:shadow-warm border border-border;
+    transition: var(--transition-smooth);
+  }
+
+  /* Timer animations */
+  .timer-urgent {
+    @apply animate-[pulse_0.5s_cubic-bezier(0.4,0,0.6,1)_infinite];
+    color: hsl(var(--timer));
+  }
+
+  /* Recipe card hover effects */
+  .recipe-card {
+    background: var(--gradient-card);
+    box-shadow: var(--shadow-card);
+    transition: var(--transition-smooth);
+  }
+
+  .recipe-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-warm);
+  }
+
+  /* Voice indicator ring */
+  .voice-ring {
+    @apply absolute inset-0 rounded-full;
+    background: radial-gradient(circle, hsl(var(--voice-active) / 0.3), transparent);
+    animation: voice-pulse 2s ease-in-out infinite;
+  }
+
+  /* Large touch targets for kitchen use */
+  .touch-target {
+    @apply min-h-12 min-w-12 flex items-center justify-center;
+  }
+
+  /* Beautiful gradient text */
+  .gradient-text {
+    background: var(--gradient-sunset);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+@layer utilities {
+  /* Custom animations */
+  @keyframes voice-pulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.8;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 0.4;
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.3s ease-out;
   }
 }
