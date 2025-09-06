@@ -15,7 +15,7 @@ interface RecipeDetailProps {
 export function RecipeDetail({ recipeId = "1" }: RecipeDetailProps) {
   const recipe = demoRecipes.find(r => r.id === recipeId) || demoRecipes[0];
   const [currentStep, setCurrentStep] = useState(0);
-  const [isVoiceListening, setIsVoiceListening] = useState(false);
+  
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
 
   const handleStartCooking = () => {
@@ -23,9 +23,6 @@ export function RecipeDetail({ recipeId = "1" }: RecipeDetailProps) {
     console.log("Starting cooking mode for:", recipe.title);
   };
 
-  const handleVoiceToggle = () => {
-    setIsVoiceListening(!isVoiceListening);
-  };
 
   const toggleStepComplete = (stepIndex: number) => {
     const newCompleted = new Set(completedSteps);
@@ -134,9 +131,10 @@ export function RecipeDetail({ recipeId = "1" }: RecipeDetailProps) {
 
         {/* Voice Assistant */}
         <VoiceAssistant 
-          isListening={isVoiceListening}
-          onToggleListening={handleVoiceToggle}
-          lastResponse="Ready to help with cooking!"
+          context={{
+            currentPage: 'recipe-detail',
+            currentRecipe: recipeId
+          }}
         />
 
         {/* Ingredients */}

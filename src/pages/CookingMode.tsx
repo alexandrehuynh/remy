@@ -15,7 +15,7 @@ interface CookingModeProps {
 export function CookingMode({ recipeId = "1" }: CookingModeProps) {
   const recipe = demoRecipes.find(r => r.id === recipeId) || demoRecipes[0];
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [isVoiceListening, setIsVoiceListening] = useState(false);
+  
   const [isSoundOn, setIsSoundOn] = useState(true);
   const [sessionStarted, setSessionStarted] = useState(false);
 
@@ -40,9 +40,6 @@ export function CookingMode({ recipeId = "1" }: CookingModeProps) {
     }
   };
 
-  const handleVoiceToggle = () => {
-    setIsVoiceListening(!isVoiceListening);
-  };
 
   const handleVoiceCommand = (command: string) => {
     // Simulate voice command processing
@@ -173,9 +170,6 @@ export function CookingMode({ recipeId = "1" }: CookingModeProps) {
 
         {/* Voice Assistant */}
         <VoiceAssistant 
-          isListening={isVoiceListening}
-          onToggleListening={handleVoiceToggle}
-          lastResponse="Ready to help with cooking!"
           onStepNavigation={(direction) => {
             if (direction === 'next') {
               handleNextStep();
@@ -185,13 +179,17 @@ export function CookingMode({ recipeId = "1" }: CookingModeProps) {
           }}
           onTimerRequest={(duration) => {
             // Add timer functionality here
-            console.log(`Setting timer for ${duration} seconds`);
+            console.log(`Setting timer for ${duration} minutes`);
           }}
           onRepeatRequest={() => {
             // Read current step aloud
             console.log('Repeating current step');
           }}
           currentStepText={currentStep.text}
+          context={{
+            currentPage: 'cooking-mode',
+            currentStep: currentStepIndex
+          }}
         />
 
         {/* Navigation Controls */}

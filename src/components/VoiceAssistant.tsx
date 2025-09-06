@@ -2,79 +2,131 @@ import { useState, useEffect } from "react";
 import { Mic, MicOff, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useVoiceConversation } from '@/hooks/useVoiceConversation';
+import { useVoiceDetection } from '@/hooks/useVoiceDetection';
+import { useVoiceChat } from '@/hooks/useVoiceChat';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useToast } from '@/components/ui/use-toast';
 
 interface VoiceAssistantProps {
-  isListening?: boolean;
-  isProcessing?: boolean;
-  onToggleListening?: () => void;
-  lastResponse?: string;
   className?: string;
   onStepNavigation?: (direction: 'next' | 'previous') => void;
   onTimerRequest?: (duration: number) => void;
   onRepeatRequest?: () => void;
   currentStepText?: string;
+  context?: {
+    currentPage?: string;
+    currentRecipe?: string;
+    currentStep?: number;
+  };
 }
 
 export function VoiceAssistant({ 
-  isListening = false, 
-  isProcessing = false,
-  onToggleListening,
-  lastResponse,
   className = "",
   onStepNavigation,
   onTimerRequest,
   onRepeatRequest,
-  currentStepText
+  currentStepText,
+  context
 }: VoiceAssistantProps) {
-  const [displayText, setDisplayText] = useState("Say 'Hey Chef' to start");
-  const [isActive, setIsActive] = useState(false);
+  const [displayText, setDisplayText] = useState("Ready for 'Hey Chef'");
   const { toast } = useToast();
   
   const { speak, stop, isPlaying } = useTextToSpeech();
-  
-  const { startConversation, endSession, status, isSpeaking } = useVoiceConversation({
-    onStepNavigation,
-    onTimerRequest,
-    onRepeatRequest,
-    agentId: "your-elevenlabs-agent-id" // Replace with your actual ElevenLabs agent ID
+  const { processCommand, isProcessing, lastResponse } = useVoiceChat();
+
+  const handleWakeWordDetected = () => {
+    setDisplayText("I'm listening! What can I help with?");
+    toast({
+      title: "Hey Chef Detected",
+      description: "I'm listening for your command!",
+    });
+  };
+
+  const handleCommandCaptured = async (command: string) => {
+    setDisplayText(`Processing: "${command}"`);
+    
+    const response = await processCommand(command, context);
+    
+    if (response?.action) {
+      switch (response.action.type) {
+        case 'navigate':
+          if (response.action.data?.direction) {
+            onStepNavigation?.(response.action.data.direction);
+          }
+          break;
+        case 'timer':
+          if (response.action.data?.minutes) {
+            onTimerRequest?.(response.action.data.minutes);
+          }
+          break;
+        case 'read':
+          if (response.action.data?.content === 'current-step' && currentStepText) {
+            await speak(currentStepText);
+          } else if (response.action.data?.content === 'ingredients') {
+            onRepeatRequest?.();
+          }
+          break;
+      }
+    }
+    
+    setDisplayText("Ready for 'Hey Chef'");
+  };
+
+  const handleVoiceError = (error: string) => {
+    console.error('Voice detection error:', error);
+    toast({
+      title: "Voice Error",
+      description: error,
+      variant: "destructive",
+    });
+  };
+
+  const { 
+    isListening, 
+    isCapturingCommand, 
+    supported, 
+    startListening, 
+    stopListening 
+  } = useVoiceDetection({
+    onWakeWordDetected: handleWakeWordDetected,
+    onCommandCaptured: handleCommandCaptured,
+    onError: handleVoiceError
   });
 
   useEffect(() => {
     if (isProcessing) {
       setDisplayText("Processing...");
+    } else if (isCapturingCommand) {
+      setDisplayText("Listening for your command...");
     } else if (isListening) {
-      setDisplayText("Listening... Say your command");
+      setDisplayText("Listening for 'Hey Chef'...");
     } else if (lastResponse) {
       setDisplayText(lastResponse);
     } else {
-      setDisplayText("Say 'Hey Chef' to start");
+      setDisplayText("Ready for 'Hey Chef'");
     }
-  }, [isListening, isProcessing, lastResponse]);
+  }, [isListening, isCapturingCommand, isProcessing, lastResponse]);
 
   const handleToggle = async () => {
-    if (isActive) {
-      setIsActive(false);
-      onToggleListening?.();
-      await endSession();
+    if (isListening) {
+      stopListening();
+      setDisplayText("Voice detection stopped");
+      toast({
+        title: "Voice Assistant Stopped",
+        description: "No longer listening for 'Hey Chef'",
+      });
     } else {
-      try {
-        setIsActive(true);
-        onToggleListening?.();
-        await startConversation();
-        
+      const started = startListening();
+      if (started) {
+        setDisplayText("Listening for 'Hey Chef'...");
         toast({
           title: "Voice Assistant Active",
-          description: "I'm listening! You can ask me about cooking steps, set timers, or navigate the recipe.",
+          description: "Say 'Hey Chef' to get my attention!",
         });
-      } catch (error) {
-        setIsActive(false);
-        onToggleListening?.();
+      } else {
         toast({
           title: "Voice Assistant Error",
-          description: error instanceof Error ? error.message : "Failed to start voice assistant",
+          description: "Failed to start voice detection",
           variant: "destructive",
         });
       }
@@ -104,21 +156,32 @@ export function VoiceAssistant({
 
   const getVoiceState = () => {
     if (isProcessing) return 'processing';
+    if (isCapturingCommand) return 'capturing';
     if (isListening) return 'listening';
-    return 'active';
+    return 'inactive';
   };
 
   const getVoiceStateColor = () => {
     const state = getVoiceState();
     switch (state) {
-      case 'listening': return 'bg-voice-listening';
-      case 'processing': return 'bg-voice-processing';
-      default: return 'bg-voice-active';
+      case 'capturing': return 'bg-green-500';
+      case 'listening': return 'bg-blue-500';
+      case 'processing': return 'bg-yellow-500';
+      default: return 'bg-muted';
     }
   };
 
-  const isConnected = status === 'connected';
-  const isCurrentlyListening = isActive && isConnected;
+  if (!supported) {
+    return (
+      <Card className={`${className} border-2 border-border/50`}>
+        <CardContent className="p-6 text-center">
+          <p className="text-sm text-muted-foreground">
+            Voice detection not supported in this browser
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className={`${className} border-2 border-border/50`}>
@@ -147,24 +210,25 @@ export function VoiceAssistant({
             <div className="relative">
               <Button
                 onClick={handleToggle}
-                variant={isCurrentlyListening ? "voice" : "outline"}
+                variant={isListening ? "voice" : "outline"}
                 size="lg"
                 className={`
                   w-20 h-20 rounded-full border-2 touch-target relative overflow-hidden
                   ${getVoiceStateColor()} hover:opacity-90 transition-all duration-300
-                  ${isCurrentlyListening ? 'voice-listening' : ''}
+                  ${isListening ? 'voice-listening' : ''}
                   ${isProcessing ? 'voice-pulse' : ''}
                 `}
+                disabled={isProcessing}
               >
-                {isCurrentlyListening ? (
+                {isListening ? (
                   <Mic className="w-8 h-8 text-white" />
                 ) : (
                   <MicOff className="w-8 h-8 text-white" />
                 )}
                 
                 {/* Animated ring for listening state */}
-                {(isCurrentlyListening || isSpeaking) && (
-                  <div className="voice-ring" />
+                {(isListening || isCapturingCommand) && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse" />
                 )}
               </Button>
             </div>
@@ -173,13 +237,10 @@ export function VoiceAssistant({
           {/* Status Text */}
           <div className="space-y-2">
             <p className="text-lg font-medium text-foreground">
-              {isCurrentlyListening 
-                ? (isSpeaking ? 'Chef Remy is speaking...' : 'Listening...') 
-                : displayText
-              }
+              {displayText}
             </p>
             
-            {!isCurrentlyListening && !isProcessing && (
+            {!isListening && !isProcessing && (
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <Volume2 className="w-4 h-4" />
                 <span>Voice commands available</span>
@@ -188,15 +249,23 @@ export function VoiceAssistant({
           </div>
 
           {/* Voice Commands Hint */}
-          {isCurrentlyListening && !isSpeaking ? (
-            <div className="text-xs text-muted-foreground max-w-sm">
-              Try: "What's next?", "Set a timer for 5 minutes", or "Repeat that"
+          {isCapturingCommand ? (
+            <div className="text-xs text-green-400 max-w-sm animate-pulse">
+              🎤 Say your command: "What's next?", "Set a timer for 5 minutes", or "Repeat that"
             </div>
-          ) : !isCurrentlyListening && !isProcessing ? (
-            <div className="text-xs text-muted-foreground max-w-sm">
-              Tap the speaker to hear the current step, or the mic to talk with Chef Remy
+          ) : isListening ? (
+            <div className="text-xs text-blue-400 max-w-sm">
+              Listening for "Hey Chef"...
             </div>
-          ) : null}
+          ) : isProcessing ? (
+            <div className="text-xs text-yellow-400 max-w-sm">
+              🧠 Chef Remy is thinking...
+            </div>
+          ) : (
+            <div className="text-xs text-muted-foreground max-w-sm">
+              Tap the speaker to hear the current step, or "Hey Chef" to talk with Chef Remy
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

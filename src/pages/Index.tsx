@@ -12,7 +12,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [isVoiceListening, setIsVoiceListening] = useState(false);
+  
 
   const filteredRecipes = demoRecipes.filter(recipe => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -23,10 +23,6 @@ const Index = () => {
 
   const allCategories = ["All", ...categories.map(cat => cat.name)];
 
-  const handleVoiceToggle = () => {
-    setIsVoiceListening(!isVoiceListening);
-    // TODO: Implement actual voice recognition
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -55,8 +51,9 @@ const Index = () => {
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* Voice Assistant */}
         <VoiceAssistant 
-          isListening={isVoiceListening}
-          onToggleListening={handleVoiceToggle}
+          context={{
+            currentPage: 'home'
+          }}
         />
 
         {/* Search and Filters */}
