@@ -14,7 +14,217 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cooking_sessions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_step: number | null
+          id: string
+          notes: string | null
+          recipe_id: string
+          started_at: string
+          status: Database["public"]["Enums"]["cooking_session_status"] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_step?: number | null
+          id?: string
+          notes?: string | null
+          recipe_id: string
+          started_at?: string
+          status?: Database["public"]["Enums"]["cooking_session_status"] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_step?: number | null
+          id?: string
+          notes?: string | null
+          recipe_id?: string
+          started_at?: string
+          status?: Database["public"]["Enums"]["cooking_session_status"] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cooking_sessions_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      recipes: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          difficulty: Database["public"]["Enums"]["difficulty_level"] | null
+          id: string
+          image_url: string | null
+          ingredients_json: Json
+          servings: number | null
+          steps_json: Json
+          title: string
+          total_time: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty_level"] | null
+          id?: string
+          image_url?: string | null
+          ingredients_json?: Json
+          servings?: number | null
+          steps_json?: Json
+          title: string
+          total_time?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty_level"] | null
+          id?: string
+          image_url?: string | null
+          ingredients_json?: Json
+          servings?: number | null
+          steps_json?: Json
+          title?: string
+          total_time?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      session_timers: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          duration_seconds: number
+          id: string
+          remaining_seconds: number | null
+          session_id: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["timer_status"] | null
+          step_id: number
+          updated_at: string
+          user_id: string
+          webhook_url: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          duration_seconds: number
+          id?: string
+          remaining_seconds?: number | null
+          session_id: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["timer_status"] | null
+          step_id: number
+          updated_at?: string
+          user_id: string
+          webhook_url?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          remaining_seconds?: number | null
+          session_id?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["timer_status"] | null
+          step_id?: number
+          updated_at?: string
+          user_id?: string
+          webhook_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_timers_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "cooking_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          dietary_restrictions: string[] | null
+          id: string
+          preferred_units: Database["public"]["Enums"]["unit_system"] | null
+          skill_level: Database["public"]["Enums"]["skill_level"] | null
+          timer_sound_enabled: boolean | null
+          updated_at: string
+          user_id: string
+          voice_enabled: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          dietary_restrictions?: string[] | null
+          id?: string
+          preferred_units?: Database["public"]["Enums"]["unit_system"] | null
+          skill_level?: Database["public"]["Enums"]["skill_level"] | null
+          timer_sound_enabled?: boolean | null
+          updated_at?: string
+          user_id: string
+          voice_enabled?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          dietary_restrictions?: string[] | null
+          id?: string
+          preferred_units?: Database["public"]["Enums"]["unit_system"] | null
+          skill_level?: Database["public"]["Enums"]["skill_level"] | null
+          timer_sound_enabled?: boolean | null
+          updated_at?: string
+          user_id?: string
+          voice_enabled?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +233,11 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      cooking_session_status: "active" | "paused" | "completed" | "cancelled"
+      difficulty_level: "easy" | "medium" | "hard"
+      skill_level: "beginner" | "intermediate" | "advanced"
+      timer_status: "pending" | "active" | "completed" | "cancelled"
+      unit_system: "metric" | "imperial"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +364,12 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      cooking_session_status: ["active", "paused", "completed", "cancelled"],
+      difficulty_level: ["easy", "medium", "hard"],
+      skill_level: ["beginner", "intermediate", "advanced"],
+      timer_status: ["pending", "active", "completed", "cancelled"],
+      unit_system: ["metric", "imperial"],
+    },
   },
 } as const
