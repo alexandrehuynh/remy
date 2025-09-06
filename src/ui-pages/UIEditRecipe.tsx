@@ -68,7 +68,9 @@ export const UIEditRecipe: React.FC<UIEditRecipeProps> = ({
   const handleDeleteInstruction = (instruction: Instruction) => {
     setRecipe(prev => ({
       ...prev,
-      instructions: prev.instructions.filter(inst => inst !== instruction)
+      instructions: prev.instructions
+        .filter(inst => inst !== instruction)
+        .map((inst, index) => ({ ...inst, order: index + 1 }))
     }));
     setHasChanges(true);
   };
@@ -132,9 +134,9 @@ export const UIEditRecipe: React.FC<UIEditRecipeProps> = ({
       {/* Content */}
       <div className="flex-1 overflow-y-auto pb-20">
         {/* Recipe Image */}
-        <div className="p-4">
+        <div className="p-4 flex justify-center">
           <button 
-            className="w-full h-48 bg-gray-300 rounded-lg flex items-center justify-center"
+            className="w-full max-w-[50%] h-48 bg-gray-300 rounded-lg flex items-center justify-center"
             style={{ backgroundColor: 'hsl(220, 90%, 70%)' }}
           >
             <span className="text-white">Tap to replace image</span>
@@ -162,6 +164,8 @@ export const UIEditRecipe: React.FC<UIEditRecipeProps> = ({
               values={recipe.ingredients} 
               onReorder={handleReorderIngredients}
               className="space-y-0"
+              layoutScroll
+              style={{ overflowY: 'visible' }}
             >
               {recipe.ingredients.map((ingredient: Ingredient, index: number) => (
                 <IngredientComponent
@@ -198,6 +202,8 @@ export const UIEditRecipe: React.FC<UIEditRecipeProps> = ({
               values={recipe.instructions} 
               onReorder={handleReorderInstructions}
               className="space-y-0"
+              layoutScroll
+              style={{ overflowY: 'visible' }}
             >
               {recipe.instructions.map((instruction: Instruction, index: number) => (
                 <InstructionComponent

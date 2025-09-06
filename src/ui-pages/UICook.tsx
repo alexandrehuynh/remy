@@ -76,7 +76,7 @@ export const UICook: React.FC<UICookProps> = ({ selectedRecipe }) => {
                 showOptions={true}
                 onEdit={() => console.log('Edit instruction:', instruction.order)}
                 onDelete={() => console.log('Delete instruction:', instruction.order)}
-                onMarkDone={(done) => console.log('Mark instruction done:', instruction.order, done)}
+                onMarkDone={() => console.log('Mark instruction done:', instruction.order)}
               />
             ))}
           </div>

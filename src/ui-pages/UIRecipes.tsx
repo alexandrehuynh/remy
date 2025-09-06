@@ -45,6 +45,8 @@ export const UIRecipes: React.FC<UIRecipesProps> = ({
 
   const handleAddCategory = (categoryName: string) => {
     console.log('Added new category:', categoryName);
+    // In a real app, this would add to categories array/database
+    setShowCategoryModal(false);
   };
 
   const filteredRecipes = selectedCategory 
@@ -117,6 +119,13 @@ export const UIRecipes: React.FC<UIRecipesProps> = ({
                   {category.name}
                 </button>
               ))}
+              <button
+                onClick={() => setShowCategoryModal(true)}
+                className="px-4 py-2 rounded-full whitespace-nowrap text-sm bg-green-500 text-white"
+                style={{ backgroundColor: 'hsl(142, 76%, 36%)' }}
+              >
+                + New
+              </button>
             </div>
           </div>
         )}
@@ -167,27 +176,27 @@ export const UIRecipes: React.FC<UIRecipesProps> = ({
                 </h2>
                 <div className="space-y-1">
                   {recipes.map((recipe) => (
-                    <button
-                      key={recipe.name}
-                      onClick={() => handleRecipeClick(recipe)}
-                      className="w-full flex items-center justify-between p-4 bg-white rounded-lg border text-left hover:bg-gray-50"
-                    >
-                      <div className="flex-1 pl-4">
-                        <div className="font-medium text-gray-800">{recipe.name}</div>
-                        <div className="text-sm text-gray-600">{recipe.timeToCook}</div>
-                      </div>
-                      <div className="relative z-[9999]">
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Options menu would appear here
-                          }}
-                          className="p-2 hover:bg-gray-100 rounded"
-                        >
-                          <EllipsisIcon className="w-5 h-5 text-gray-500" />
-                        </button>
-                      </div>
-                    </button>
+                  <div
+                    key={recipe.name}
+                    className="w-full flex items-center justify-between p-4 bg-white rounded-lg border hover:bg-gray-50 cursor-pointer"
+                    onClick={() => handleRecipeClick(recipe)}
+                  >
+                    <div className="flex-1 pl-4">
+                      <div className="font-medium text-gray-800">{recipe.name}</div>
+                      <div className="text-sm text-gray-600">{recipe.timeToCook}</div>
+                    </div>
+                    <div className="relative z-[9999]">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Options menu would appear here
+                        }}
+                        className="p-2 hover:bg-gray-100 rounded"
+                      >
+                        <EllipsisIcon className="w-5 h-5 text-gray-500" />
+                      </button>
+                    </div>
+                  </div>
                   ))}
                 </div>
               </div>

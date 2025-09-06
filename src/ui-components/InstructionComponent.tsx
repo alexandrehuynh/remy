@@ -72,11 +72,12 @@ export const InstructionComponent: React.FC<InstructionComponentProps> = ({
 
     setDragPosition(newPosition);
 
-    if (newPosition <= maxLeftDrag && !hasTriggeredLeft) {
+    // Only trigger actions when reaching exact maximum drag distance
+    if (Math.abs(newPosition - maxLeftDrag) < 5 && !hasTriggeredLeft) {
       setHasTriggeredLeft(true);
       onDelete?.();
     }
-    if (newPosition >= maxRightDrag && !hasTriggeredRight) {
+    if (Math.abs(newPosition - maxRightDrag) < 5 && !hasTriggeredRight) {
       setHasTriggeredRight(true);
       onMarkDone?.();
     }
@@ -168,12 +169,19 @@ export const InstructionComponent: React.FC<InstructionComponentProps> = ({
               </button>
             </div>
           )}
+          
         </div>
       </motion.div>
       
       {showOptionsMenu && (
-        <div className="fixed right-4 bg-white border rounded-lg shadow-lg py-1 min-w-[120px] z-[9999]"
-             style={{ top: '50%', transform: 'translateY(-50%)' }}>
+        <div className="fixed bg-white border rounded-lg shadow-lg py-1 min-w-[120px] z-[9999]"
+             style={{ 
+               position: 'fixed',
+               top: '50%', 
+               right: '60px',
+               transform: 'translateY(-50%)',
+               boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+             }}>
           <button
             onClick={handleEdit}
             className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
