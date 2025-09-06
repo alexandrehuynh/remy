@@ -163,9 +163,6 @@ export const UIEditRecipe: React.FC<UIEditRecipeProps> = ({
               axis="y" 
               values={recipe.ingredients} 
               onReorder={handleReorderIngredients}
-              className="space-y-0"
-              layoutScroll
-              style={{ overflowY: 'visible' }}
             >
               {recipe.ingredients.map((ingredient: Ingredient, index: number) => (
                 <IngredientComponent
@@ -201,8 +198,6 @@ export const UIEditRecipe: React.FC<UIEditRecipeProps> = ({
               axis="y" 
               values={recipe.instructions} 
               onReorder={handleReorderInstructions}
-              className="space-y-0"
-              layoutScroll
             >
               {recipe.instructions.map((instruction: Instruction, index: number) => (
                 <InstructionComponent
