@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Instruction, EllipsisIcon, CheckIcon, XIcon } from '../lib/ui-constants';
 import { Slider } from './Slider';
-import { Orderable } from './Orderable';
+import { OrderableItem } from './Orderable';
 
 interface InstructionComponentProps {
   instruction: Instruction;
@@ -117,9 +117,9 @@ export const InstructionComponent: React.FC<InstructionComponentProps> = ({
 
   if (isOrderable) {
     wrappedContent = (
-      <Orderable>
+      <OrderableItem item={instruction}>
         {wrappedContent}
-      </Orderable>
+      </OrderableItem>
     );
   }
 

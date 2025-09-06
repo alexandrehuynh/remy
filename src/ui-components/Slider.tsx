@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
+import { motion, PanInfo } from 'framer-motion';
 
 interface SliderProps {
   children: React.ReactNode;
@@ -25,153 +26,105 @@ export const Slider: React.FC<SliderProps> = ({
   icon2: Icon2,
   disabled = false
 }) => {
-  const [isDragging, setIsDragging] = useState(false);
   const [dragPosition, setDragPosition] = useState(0);
   const [hasTriggeredLeft, setHasTriggeredLeft] = useState(false);
   const [hasTriggeredRight, setHasTriggeredRight] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const startXRef = useRef(0);
 
-  const handleStart = (clientX: number) => {
-    if (disabled) return;
-    setIsDragging(true);
-    startXRef.current = clientX;
-    setHasTriggeredLeft(false);
-    setHasTriggeredRight(false);
-  };
-
-  const handleMove = (clientX: number) => {
-    if (!isDragging || !containerRef.current) return;
+  const handleDrag = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (disabled || !containerRef.current) return;
 
     const containerWidth = containerRef.current.offsetWidth;
-    const deltaX = clientX - startXRef.current;
-    const percentage = (deltaX / containerWidth) * 100;
+    const maxLeftDrag = percentageLeft ? -(containerWidth * percentageLeft / 100) : 0;
+    const maxRightDrag = percentageRight ? (containerWidth * percentageRight / 100) : 0;
 
-    // Constrain movement based on provided percentages
-    let constrainedPercentage = percentage;
-    
-    if (percentage < 0 && percentageLeft) {
-      constrainedPercentage = Math.max(percentage, -percentageLeft);
-    } else if (percentage < 0 && !percentageLeft) {
-      constrainedPercentage = 0;
+    let newPosition = info.offset.x;
+
+    // Constrain to allowed drag distances
+    if (percentageLeft && newPosition < maxLeftDrag) {
+      newPosition = maxLeftDrag;
     }
-    
-    if (percentage > 0 && percentageRight) {
-      constrainedPercentage = Math.min(percentage, percentageRight);
-    } else if (percentage > 0 && !percentageRight) {
-      constrainedPercentage = 0;
+    if (percentageRight && newPosition > maxRightDrag) {
+      newPosition = maxRightDrag;
+    }
+    if (!percentageLeft && newPosition < 0) {
+      newPosition = 0;
+    }
+    if (!percentageRight && newPosition > 0) {
+      newPosition = 0;
     }
 
-    setDragPosition(constrainedPercentage);
+    setDragPosition(newPosition);
 
-    // Check for trigger points
-    if (percentageLeft && constrainedPercentage <= -percentageLeft && !hasTriggeredLeft) {
+    // Trigger actions when reaching maximum drag
+    if (percentageLeft && newPosition <= maxLeftDrag && !hasTriggeredLeft) {
       setHasTriggeredLeft(true);
       onPress1?.();
     }
-    
-    if (percentageRight && constrainedPercentage >= percentageRight && !hasTriggeredRight) {
+    if (percentageRight && newPosition >= maxRightDrag && !hasTriggeredRight) {
       setHasTriggeredRight(true);
       onPress2?.();
     }
   };
 
-  const handleEnd = () => {
-    if (!isDragging) return;
-    setIsDragging(false);
+  const handleDragEnd = () => {
     setDragPosition(0);
     setHasTriggeredLeft(false);
     setHasTriggeredRight(false);
   };
 
-  // Mouse events
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    handleStart(e.clientX);
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    handleMove(e.clientX);
-  };
-
-  const handleMouseUp = () => {
-    handleEnd();
-  };
-
-  // Touch events
-  const handleTouchStart = (e: React.TouchEvent) => {
-    e.preventDefault();
-    handleStart(e.touches[0].clientX);
-  };
-
-  const handleTouchMove = (e: TouchEvent) => {
-    e.preventDefault();
-    handleMove(e.touches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    handleEnd();
-  };
-
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      document.addEventListener('touchmove', handleTouchMove);
-      document.addEventListener('touchend', handleTouchEnd);
+  const handleClick = (e: React.MouseEvent) => {
+    // Prevent click when dragging
+    if (Math.abs(dragPosition) > 5) {
+      e.preventDefault();
+      e.stopPropagation();
     }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [isDragging]);
+  };
 
   return (
-    <div
-      ref={containerRef}
-      className="relative overflow-hidden"
-      onMouseDown={handleMouseDown}
-      onTouchStart={handleTouchStart}
-      style={{
-        transform: `translateX(${dragPosition}%)`,
-        transition: isDragging ? 'none' : 'transform 0.3s ease-out'
-      }}
-    >
+    <div ref={containerRef} className="relative overflow-hidden">
       {/* Left background */}
       {bgColor1 && percentageLeft && (
-        <div
-          className="absolute inset-y-0 left-0 flex items-center justify-start pl-4"
-          style={{
+        <div 
+          className="absolute left-0 top-0 h-full flex items-center justify-start pl-4"
+          style={{ 
             backgroundColor: bgColor1,
             width: `${percentageLeft}%`,
-            transform: 'translateX(-100%)'
+            opacity: dragPosition < 0 ? Math.abs(dragPosition) / (containerRef.current?.offsetWidth || 1) * (100 / percentageLeft) : 0
           }}
         >
           {Icon1 && <Icon1 className="w-6 h-6 text-white" />}
         </div>
       )}
-
+      
       {/* Right background */}
       {bgColor2 && percentageRight && (
-        <div
-          className="absolute inset-y-0 right-0 flex items-center justify-end pr-4"
-          style={{
+        <div 
+          className="absolute right-0 top-0 h-full flex items-center justify-end pr-4"
+          style={{ 
             backgroundColor: bgColor2,
             width: `${percentageRight}%`,
-            transform: 'translateX(100%)'
+            opacity: dragPosition > 0 ? dragPosition / (containerRef.current?.offsetWidth || 1) * (100 / percentageRight) : 0
           }}
         >
           {Icon2 && <Icon2 className="w-6 h-6 text-white" />}
         </div>
       )}
 
-      {/* Content */}
-      <div className="relative z-10 bg-white">
+      {/* Draggable content */}
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0}
+        onDrag={handleDrag}
+        onDragEnd={handleDragEnd}
+        onClick={handleClick}
+        animate={{ x: dragPosition }}
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        className="relative z-10"
+      >
         {children}
-      </div>
+      </motion.div>
     </div>
   );
 };

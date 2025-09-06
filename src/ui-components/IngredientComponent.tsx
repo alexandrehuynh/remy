@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Ingredient, EllipsisIcon, CheckIcon, XIcon } from '../lib/ui-constants';
 import { Slider } from './Slider';
-import { Orderable } from './Orderable';
+import { OrderableItem } from './Orderable';
 
 interface IngredientComponentProps {
   ingredient: Ingredient;
@@ -111,9 +111,9 @@ export const IngredientComponent: React.FC<IngredientComponentProps> = ({
 
   if (isOrderable) {
     wrappedContent = (
-      <Orderable>
+      <OrderableItem item={ingredient}>
         {wrappedContent}
-      </Orderable>
+      </OrderableItem>
     );
   }
 
