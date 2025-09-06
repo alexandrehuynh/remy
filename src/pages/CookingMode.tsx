@@ -176,6 +176,22 @@ export function CookingMode({ recipeId = "1" }: CookingModeProps) {
           isListening={isVoiceListening}
           onToggleListening={handleVoiceToggle}
           lastResponse="Ready to help with cooking!"
+          onStepNavigation={(direction) => {
+            if (direction === 'next') {
+              handleNextStep();
+            } else {
+              handlePreviousStep();
+            }
+          }}
+          onTimerRequest={(duration) => {
+            // Add timer functionality here
+            console.log(`Setting timer for ${duration} seconds`);
+          }}
+          onRepeatRequest={() => {
+            // Read current step aloud
+            console.log('Repeating current step');
+          }}
+          currentStepText={currentStep.text}
         />
 
         {/* Navigation Controls */}

@@ -1,1 +1,7 @@
 project_id = "vjjcceqkdvjpibuxuvzk"
+
+[functions.text-to-speech]
+verify_jwt = false
+
+[functions.get-signed-url]
+verify_jwt = false
