@@ -203,7 +203,7 @@ export const UIEditRecipe: React.FC<UIEditRecipeProps> = ({
               onReorder={handleReorderInstructions}
               className="space-y-0"
               layoutScroll
-              style={{ overflowY: 'visible' }}
+              style={}
             >
               {recipe.instructions.map((instruction: Instruction, index: number) => (
                 <InstructionComponent
