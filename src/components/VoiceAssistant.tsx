@@ -152,23 +152,24 @@ export function VoiceAssistant({
     return "Tap to start AI conversation";
   };
 
-  // Check if we should use compact mode (also check for className that includes 'compact')
+  // Check if we should use compact mode (also check for className that includes 'compact' or 'sidebar')
   const isCompactMode = compact || className.includes('compact');
+  const isSidebarMode = className.includes('sidebar');
   
   return (
-    <Card className={`${className} border-2 border-border/50 overflow-hidden ${isCompactMode ? 'compact-voice-assistant' : ''}`}>
-      <CardContent className={isCompactMode ? "p-4" : "p-6"}>
-        <div className={`flex transition-all duration-500 ${isElevenLabsConnected && !isCompactMode ? 'gap-6' : 'justify-center'}`}>
+    <Card className={`${className} ${isSidebarMode ? 'border-0 shadow-none bg-transparent' : 'border-2 border-border/50'} overflow-hidden`}>
+      <CardContent className={isSidebarMode ? "p-0" : isCompactMode ? "p-4" : "p-6"}>
+        <div className={`${isSidebarMode ? 'space-y-3' : `flex transition-all duration-500 ${isElevenLabsConnected && !isCompactMode ? 'gap-6' : 'justify-center'}`}`}>
           {/* Main Voice Interface */}
-          <div className={`flex flex-col items-center gap-4 ${isElevenLabsConnected && !isCompactMode ? 'w-1/2' : 'w-full'} transition-all duration-500`}>
+          <div className={`${isSidebarMode ? 'w-full' : `flex flex-col items-center gap-4 ${isElevenLabsConnected && !isCompactMode ? 'w-1/2' : 'w-full'} transition-all duration-500`}`}>
             
             {/* Voice Button with Wave Animation */}
-            <div className="relative">
+            <div className={`relative ${isSidebarMode ? 'flex justify-center' : ''}}`}>
               <Button
                 onClick={handleVoiceToggle}
-                size={isCompactMode ? "default" : "lg"}
+                size={isSidebarMode ? "default" : isCompactMode ? "default" : "lg"}
                 className={`
-                  relative ${isCompactMode ? 'w-16 h-16' : 'w-24 h-24'} rounded-full border-0 transition-all duration-300 
+                  relative ${isSidebarMode ? 'w-12 h-12' : isCompactMode ? 'w-16 h-16' : 'w-24 h-24'} rounded-full border-0 transition-all duration-300 
                   ${getVoiceStateColor()}
                   hover:scale-105 active:scale-95
                 `}
@@ -184,16 +185,16 @@ export function VoiceAssistant({
                 
                 {/* Icon */}
                 {isElevenLabsConnected ? (
-                  <PhoneOff className={`${isCompactMode ? 'w-6 h-6' : 'w-10 h-10'} text-white`} />
+                  <PhoneOff className={`${isSidebarMode ? 'w-4 h-4' : isCompactMode ? 'w-6 h-6' : 'w-10 h-10'} text-white`} />
                 ) : isElevenLabsConnecting ? (
-                  <Phone className={`${isCompactMode ? 'w-6 h-6' : 'w-10 h-10'} text-white animate-pulse`} />
+                  <Phone className={`${isSidebarMode ? 'w-4 h-4' : isCompactMode ? 'w-6 h-6' : 'w-10 h-10'} text-white animate-pulse`} />
                 ) : (
-                  <Phone className={`${isCompactMode ? 'w-6 h-6' : 'w-10 h-10'} text-white`} />
+                  <Phone className={`${isSidebarMode ? 'w-4 h-4' : isCompactMode ? 'w-6 h-6' : 'w-10 h-10'} text-white`} />
                 )}
               </Button>
 
               {/* TTS Button - positioned to the side if conversation active */}
-              {currentStepText && !isCompactMode && (
+              {currentStepText && !isCompactMode && !isSidebarMode && (
                 <div className={`absolute ${isElevenLabsConnected ? '-left-16' : '-right-16'} top-1/2 -translate-y-1/2`}>
                   <Button
                     onClick={handleReadStep}
@@ -209,29 +210,45 @@ export function VoiceAssistant({
             </div>
 
             {/* Status Text */}
-            <div className="text-center space-y-2">
-              <p className={`${isCompactMode ? 'text-xs' : 'text-sm'} font-medium text-foreground`}>
-                {isCompactMode && isElevenLabsConnected ? displayText.slice(0, 50) + (displayText.length > 50 ? '...' : '') : getStatusText()}
-              </p>
-              
-              {!isElevenLabsConnected && !isElevenLabsConnecting && !isCompactMode && (
-                <p className="text-xs text-muted-foreground">
-                  Ask for recipes, nutrition info, or cooking tips
+            {!isSidebarMode && (
+              <div className="text-center space-y-2">
+                <p className={`${isCompactMode ? 'text-xs' : 'text-sm'} font-medium text-foreground`}>
+                  {isCompactMode && isElevenLabsConnected ? displayText.slice(0, 50) + (displayText.length > 50 ? '...' : '') : getStatusText()}
                 </p>
-              )}
-            </div>
+                
+                {!isElevenLabsConnected && !isElevenLabsConnecting && !isCompactMode && (
+                  <p className="text-xs text-muted-foreground">
+                    Ask for recipes, nutrition info, or cooking tips
+                  </p>
+                )}
+              </div>
+            )}
+            
+            {/* Sidebar Status - Compact */}
+            {isSidebarMode && (
+              <div className="text-center mt-2">
+                <p className="text-xs font-medium text-foreground">
+                  {isElevenLabsConnected ? "🎤 Chef Remy" : "Talk to AI"}
+                </p>
+                {isElevenLabsConnected && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {displayText.slice(0, 40)}...
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Chat History - slides in when connected with fixed height - hidden in compact mode */}
+          {/* Chat History - different layouts based on mode */}
           {isElevenLabsConnected && !isCompactMode && (
-            <div className="w-1/2 flex flex-col animate-slide-in-right">
+            <div className={`${isSidebarMode ? 'w-full mt-3' : 'w-1/2'} flex flex-col ${!isSidebarMode ? 'animate-slide-in-right' : ''}`}>
               <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground border-b pb-2 mb-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                 Conversation
               </div>
               
               {/* Fixed height chat container with scroll */}
-              <div className="flex-1 h-48 bg-gray-50 dark:bg-gray-900/20 rounded-lg border overflow-hidden">
+              <div className={`flex-1 ${isSidebarMode ? 'h-32' : 'h-48'} bg-gray-50 dark:bg-gray-900/20 rounded-lg border overflow-hidden`}>
                 <div ref={chatContainerRef} className="h-full overflow-y-auto p-3 space-y-2 scroll-smooth">
                   {messages.length > 0 ? (
                     messages.map((message, index) => (
@@ -258,6 +275,22 @@ export function VoiceAssistant({
                   )}
                 </div>
               </div>
+              
+              {/* TTS Button for sidebar mode */}
+              {isSidebarMode && currentStepText && (
+                <div className="flex justify-center mt-2">
+                  <Button
+                    onClick={handleReadStep}
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                    title="Read current step aloud"
+                  >
+                    <Volume2 className="h-3 w-3 mr-1" />
+                    Read Step
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
