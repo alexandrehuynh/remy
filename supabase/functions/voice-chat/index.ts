@@ -172,15 +172,8 @@ async function processAICommand(command: string, context?: any): Promise<VoiceCh
   }
 
   try {
-    // Determine if this is a recipe search or nutrition analysis
-    if (isRecipeSearchCommand(command)) {
-      return await handleRecipeSearch(command)
-    } else if (isNutritionCommand(command)) {
-      return await handleNutritionAnalysis(command)
-    } else {
-      // Use OpenAI for general cooking questions and complex reasoning
-      return await handleGeneralQuery(command, context)
-    }
+    // Route ALL food-related queries to OpenAI for better conversational responses
+    return await handleGeneralQuery(command, context)
   } catch (error) {
     console.error('AI processing error:', error)
     return {
@@ -356,7 +349,15 @@ async function handleGeneralQuery(command: string, context?: any): Promise<Voice
         messages: [
           {
             role: 'system',
-            content: `You are Chef Remy, a helpful cooking assistant. Provide conversational, friendly responses about cooking, recipes, and food. Keep responses concise but helpful. Context: ${JSON.stringify(context || {})}`
+            content: `You are Chef Remy, an expert cooking assistant and nutritionist. You help with:
+
+• Recipe suggestions and detailed cooking instructions
+• Nutritional analysis and calorie estimates  
+• Cooking techniques, tips, and troubleshooting
+• Ingredient substitutions and dietary modifications
+• Meal planning and portion guidance
+
+Provide conversational, friendly responses perfect for voice interaction. Include specific details like temperatures, times, and measurements. Keep responses concise but comprehensive. Context: ${JSON.stringify(context || {})}`
           },
           {
             role: 'user',
