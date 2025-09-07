@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, RotateCcw, VolumeX, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { Timer } from "@/components/Timer";
 import { demoRecipes } from "@/lib/demo-data";
+import { logger } from "@/lib/logger";
 
 export function CookingMode() {
   const { recipeId } = useParams<{ recipeId: string }>();
@@ -20,6 +21,7 @@ export function CookingMode() {
   const [sessionStarted, setSessionStarted] = useState(false);
   const [activeTimers, setActiveTimers] = useState<{ id: string; duration: number; label: string }[]>([]);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+  const [contextUpdateFn, setContextUpdateFn] = useState<((context: any) => void) | null>(null);
 
   const currentStep = recipe.steps[currentStepIndex];
   const progress = (completedSteps.size / recipe.steps.length) * 100;
@@ -52,6 +54,21 @@ export function CookingMode() {
     if (targetStep === currentStepIndex && currentStepIndex < recipe.steps.length - 1) {
       setCurrentStepIndex(currentStepIndex + 1);
     }
+  };
+
+  // Handle manual step completion toggle when clicking on step circles
+  const handleStepToggle = (stepIndex: number, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent triggering the step navigation
+    
+    setCompletedSteps(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(stepIndex)) {
+        newSet.delete(stepIndex); // Uncross if already completed
+      } else {
+        newSet.add(stepIndex); // Cross out if not completed
+      }
+      return newSet;
+    });
   };
 
 
@@ -89,6 +106,89 @@ export function CookingMode() {
   const currentStepIngredients = currentStep.ingredients?.map(id => 
     recipe.ingredients.find(ing => ing.id === id)
   ).filter(Boolean) || [];
+
+  // Enhanced context builder for comprehensive cooking guidance
+  const buildEnhancedContext = useCallback(() => ({
+    currentPage: 'cooking-mode',
+    cookingSession: {
+      recipe: {
+        id: recipe.id,
+        title: recipe.title,
+        description: recipe.description,
+        category: recipe.category,
+        difficulty: recipe.difficulty,
+        totalTime: recipe.totalTime,
+        servings: recipe.servings
+      },
+      currentStep: {
+        index: currentStepIndex,
+        stepNumber: currentStep.order,
+        text: currentStep.text,
+        duration: currentStep.duration,
+        canParallel: currentStep.canParallel,
+        requiredIngredients: currentStepIngredients.map(ing => ({
+          id: ing!.id,
+          name: ing!.name,
+          amount: ing!.amount,
+          unit: ing!.unit
+        }))
+      },
+      progress: {
+        currentStepIndex,
+        totalSteps: recipe.steps.length,
+        completedSteps: Array.from(completedSteps),
+        completionPercentage: Math.round((completedSteps.size / recipe.steps.length) * 100)
+      },
+      ingredients: {
+        all: recipe.ingredients.map(ing => ({
+          id: ing.id,
+          name: ing.name,
+          amount: ing.amount,
+          unit: ing.unit,
+          isChecked: checkedIngredients.has(ing.id)
+        })),
+        checkedCount: checkedIngredients.size,
+        totalCount: recipe.ingredients.length
+      },
+      steps: recipe.steps.map((step, index) => ({
+        id: step.id,
+        stepNumber: step.order,
+        text: step.text,
+        duration: step.duration,
+        canParallel: step.canParallel,
+        ingredients: step.ingredients?.map(ingId => {
+          const ing = recipe.ingredients.find(i => i.id === ingId);
+          return ing ? `${ing.amount} ${ing.unit} ${ing.name}` : '';
+        }).filter(Boolean) || [],
+        isCompleted: completedSteps.has(index),
+        isCurrent: index === currentStepIndex
+      })),
+      activeTimers: activeTimers.map(t => ({
+        id: t.id,
+        label: t.label,
+        remainingSeconds: t.duration
+      })),
+      cookingTips: {
+        parallelSteps: recipe.steps.filter(step => step.canParallel).map(s => s.order),
+        totalEstimatedTime: recipe.totalTime,
+        difficultyLevel: recipe.difficulty
+      }
+    }
+  }), [recipe, currentStepIndex, currentStep, currentStepIngredients, completedSteps, checkedIngredients, activeTimers]);
+
+  // Function to send context updates when cooking state changes
+  const sendContextUpdate = useCallback(() => {
+    if (contextUpdateFn) {
+      const updatedContext = buildEnhancedContext();
+      contextUpdateFn(updatedContext);
+      logger.debug('Context update sent to voice agent');
+    }
+  }, [contextUpdateFn, buildEnhancedContext]);
+
+  // Send context updates when key state changes
+  useEffect(() => {
+    sendContextUpdate();
+  }, [currentStepIndex, completedSteps, checkedIngredients, activeTimers, sendContextUpdate]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -132,7 +232,7 @@ export function CookingMode() {
       <div className="flex h-[calc(100vh-80px)]">
         {/* Reorganized Sidebar */}
         <aside className="w-80 border-r border-border bg-card/50 backdrop-blur-sm overflow-y-auto">
-          <div className="p-4 space-y-4">
+          <div className="p-4 pt-7 space-y-4">
             {/* Voice Assistant - Moved to Top */}
             <div className="animate-fade-in">
               <VoiceAssistant 
@@ -159,30 +259,8 @@ export function CookingMode() {
                 }}
                 onStepCompletion={handleStepCompletion}
                 currentStepText={currentStep.text}
-                context={{
-                  currentPage: 'cooking-mode',
-                  currentRecipe: recipe.title,
-                  currentStep: currentStepIndex,
-                  totalSteps: recipe.steps.length,
-                  completedSteps: Array.from(completedSteps),
-                  availableIngredients: recipe.ingredients.map(ing => ing.name),
-                  checkedIngredients: Array.from(checkedIngredients).map(id => {
-                    const ing = recipe.ingredients.find(i => i.id === id);
-                    return ing ? ing.name : id;
-                  }),
-                  activeTimers: activeTimers.map(t => ({
-                    label: t.label,
-                    remaining: t.duration
-                  })),
-                  cookingSessionStarted: sessionStarted,
-                  recipeSteps: recipe.steps.map((step, index) => ({
-                    stepNumber: index,
-                    text: step.text,
-                    isCompleted: completedSteps.has(index),
-                    isCurrent: index === currentStepIndex,
-                    duration: step.duration
-                  }))
-                }}
+                onContextUpdate={setContextUpdateFn}
+                context={buildEnhancedContext()}
               />
             </div>
 
@@ -349,16 +427,20 @@ export function CookingMode() {
                         style={{ animationDelay: `${index * 0.05}s` }}
                       >
                         <div className="flex items-start gap-3">
-                          <div className={`
-                            w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold transition-all flex-shrink-0 mt-0.5
-                            ${index === currentStepIndex 
-                              ? 'bg-primary text-white' 
-                              : completedSteps.has(index)
-                                ? 'bg-green-600 text-white'
-                                : 'bg-muted-foreground/20 text-muted-foreground'
-                            }
-                          `}>
-                            {step.order}
+                          <div 
+                            className={`
+                              w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold transition-all flex-shrink-0 mt-0.5 cursor-pointer hover:scale-110
+                              ${index === currentStepIndex 
+                                ? 'bg-primary text-white hover:bg-primary/80' 
+                                : completedSteps.has(index)
+                                  ? 'bg-green-600 text-white hover:bg-green-700'
+                                  : 'bg-muted-foreground/20 text-muted-foreground hover:bg-muted-foreground/30'
+                              }
+                            `}
+                            onClick={(e) => handleStepToggle(index, e)}
+                            title={completedSteps.has(index) ? "Click to mark as incomplete" : "Click to mark as completed"}
+                          >
+                            {completedSteps.has(index) ? '✓' : step.order}
                           </div>
                           <p className={`
                             flex-1 leading-relaxed

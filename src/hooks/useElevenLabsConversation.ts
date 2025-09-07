@@ -81,13 +81,21 @@ export const useElevenLabsConversation = ({
           setIsConnecting(false);
           onConnect?.();
           
-          // Send initial context to the agent
-          if (context) {
-            const contextMessage = `Context: ${JSON.stringify(context)}`;
-            logger.debug('Sending context to agent:', contextMessage);
-            // Note: Context should be sent as a system message or initial prompt
-            // This depends on how the ElevenLabs agent is configured to handle context
-          }
+          // Send initial context to the agent after connection is established
+          setTimeout(() => {
+            if (context && conversationRef.current && conversationRef.current.sendContextualUpdate) {
+              const contextMessage = `Cooking Context: You are Chef Remy, helping with cooking. Here's the current cooking session context: ${JSON.stringify(context, null, 2)}. Use this information to provide relevant cooking guidance, step instructions, and ingredient help.`;
+              logger.debug('Sending context to agent:', contextMessage);
+              
+              try {
+                // Use sendContextualUpdate to send non-interrupting context
+                conversationRef.current.sendContextualUpdate(contextMessage);
+                logger.debug('Context successfully sent to ElevenLabs agent');
+              } catch (error) {
+                logger.error('Failed to send context to agent:', error);
+              }
+            }
+          }, 100); // Small delay to ensure conversation is fully initialized
           
           onMessage?.('🤖 Connected to Chef Remy AI - ready to help with cooking!');
         },
@@ -150,6 +158,18 @@ export const useElevenLabsConversation = ({
     }
   }, [agentId, isConnected, isConnecting, onConnect, onDisconnect, onError, onMessage, initializeAudioContext, context]);
 
+  const updateContext = useCallback((newContext: Record<string, any>) => {
+    if (conversationRef.current && conversationRef.current.sendContextualUpdate) {
+      try {
+        const contextMessage = `Updated Cooking Context: ${JSON.stringify(newContext, null, 2)}`;
+        conversationRef.current.sendContextualUpdate(contextMessage);
+        logger.debug('Context update sent to agent:', contextMessage);
+      } catch (error) {
+        logger.error('Failed to send context update to agent:', error);
+      }
+    }
+  }, []);
+
   const endConversation = useCallback(async () => {
     if (conversationRef.current) {
       try {
@@ -194,6 +214,7 @@ export const useElevenLabsConversation = ({
     isConnecting,
     isSpeaking,
     startConversation,
-    endConversation
+    endConversation,
+    updateContext
   };
 };

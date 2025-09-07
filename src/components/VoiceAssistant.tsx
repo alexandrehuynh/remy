@@ -18,6 +18,7 @@ interface VoiceAssistantProps {
   onIngredientCheck?: (ingredientName: string) => void;
   onStepCompletion?: (stepIndex?: number) => void;
   compact?: boolean; // New compact mode prop
+  onContextUpdate?: (updateContextFn: (context: any) => void) => void; // New callback to expose updateContext
   context?: {
     currentPage?: string;
     currentRecipe?: string;
@@ -48,6 +49,7 @@ export function VoiceAssistant({
   onIngredientCheck,
   onStepCompletion,
   compact = false,
+  onContextUpdate,
   context
 }: VoiceAssistantProps) {
   const navigate = useNavigate();
@@ -62,7 +64,8 @@ export function VoiceAssistant({
     isConnected: isElevenLabsConnected,
     isConnecting: isElevenLabsConnecting,
     startConversation,
-    endConversation
+    endConversation,
+    updateContext
   } = useElevenLabsConversation({
     context,
     onConnect: () => {
@@ -162,6 +165,13 @@ export function VoiceAssistant({
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Expose updateContext function to parent component
+  useEffect(() => {
+    if (onContextUpdate && updateContext) {
+      onContextUpdate(updateContext);
+    }
+  }, [onContextUpdate, updateContext]);
 
   const handleVoiceToggle = async () => {
     logger.debug('[VoiceAssistant] Voice toggle clicked');
