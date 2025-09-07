@@ -11,13 +11,15 @@ interface VoiceChatRequest {
     currentPage?: string;
     currentRecipe?: string;
     currentStep?: number;
+    availableIngredients?: string[];
+    checkedIngredients?: string[];
   };
 }
 
 interface VoiceChatResponse {
   response: string;
   action?: {
-    type: 'navigate' | 'timer' | 'read' | 'info';
+    type: 'navigate' | 'timer' | 'read' | 'info' | 'ingredient' | 'recipe_search' | 'start_cooking';
     data?: any;
   };
   tts?: boolean;
@@ -92,6 +94,52 @@ serve(async (req) => {
 })
 
 function processBasicCommand(command: string, context?: any): VoiceChatResponse | null {
+  const lowerCommand = command.toLowerCase();
+  
+  // Ingredient checking commands for cooking mode
+  if (context?.currentPage === 'cooking-mode') {
+    // Check for ingredient completion commands
+    const checkPatterns = [
+      /i have (?:the )?(.+)/i,
+      /got (?:the )?(.+)/i,
+      /found (?:the )?(.+)/i,
+      /check off (?:the )?(.+)/i,
+      /(?:mark )?(.+) (?:as )?(?:ready|done|complete)/i
+    ];
+    
+    for (const pattern of checkPatterns) {
+      const match = command.match(pattern);
+      if (match) {
+        const ingredientName = match[1].trim();
+        return {
+          response: `Great! I'll mark ${ingredientName} as ready.`,
+          action: { type: 'ingredient', data: { action: 'check', ingredient: ingredientName } },
+          tts: true
+        };
+      }
+    }
+    
+    // Ask for next ingredient
+    if (lowerCommand.includes('what do i need') || lowerCommand.includes('next ingredient')) {
+      return {
+        response: "Let me tell you what ingredient you need next.",
+        action: { type: 'ingredient', data: { action: 'next' } },
+        tts: true
+      };
+    }
+  }
+  
+  // Recipe search and confirmation (for main page)
+  if (context?.currentPage === 'home') {
+    if (lowerCommand.includes('yes') && (lowerCommand.includes('cook') || lowerCommand.includes('start'))) {
+      return {
+        response: "Perfect! Let's start cooking. I'll take you to the cooking session.",
+        action: { type: 'start_cooking', data: { confirmed: true } },
+        tts: true
+      };
+    }
+  }
+  
   // Navigation commands
   if (command.includes('next step') || command.includes('what\'s next')) {
     return {
@@ -154,8 +202,12 @@ function processBasicCommand(command: string, context?: any): VoiceChatResponse 
 
   // Help commands
   if (command.includes('help') || command.includes('what can you do')) {
+    const helpText = context?.currentPage === 'cooking-mode' 
+      ? "I'm Chef Remy! While cooking, I can help you navigate steps, set timers, check off ingredients, and answer cooking questions. Try saying 'I have the chicken' or 'next step'!"
+      : "I'm Chef Remy, your cooking assistant! I can help you search for recipes, get nutrition info, and guide you through cooking. Just ask me naturally!";
+    
     return {
-      response: "I'm Chef Remy, your cooking assistant! I can help you navigate recipes, set timers, read ingredients and steps, search for recipes, analyze nutrition, and answer cooking questions. Just ask me naturally!",
+      response: helpText,
       tts: true
     }
   }
@@ -338,6 +390,50 @@ async function handleNutritionAnalysis(command: string): Promise<VoiceChatRespon
 
 async function handleGeneralQuery(command: string, context?: any): Promise<VoiceChatResponse> {
   try {
+    // Check if this is a recipe search query
+    const isRecipeQuery = isRecipeSearchCommand(command);
+    
+    if (isRecipeQuery && context?.currentPage === 'home') {
+      // Handle recipe search with structured response
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: `You are Chef Remy. When someone asks for a recipe, provide a brief summary of a good recipe option and ask if they want to cook it. Format your response to include:
+1. A clear recipe title
+2. Brief description (1-2 sentences)
+3. Estimated cook time
+4. End with "Would you like to start cooking this recipe?"
+
+Keep it conversational and enthusiastic. Focus on one specific recipe recommendation.`
+            },
+            {
+              role: 'user',
+              content: command
+            }
+          ],
+          max_tokens: 150
+        })
+      });
+      
+      const result = await response.json();
+      const aiResponse = result.choices?.[0]?.message?.content?.trim() || "I found a great recipe! Would you like to start cooking?";
+      
+      return {
+        response: aiResponse,
+        action: { type: 'recipe_search', data: { query: command, needsConfirmation: true } },
+        tts: true
+      };
+    }
+    
+    // Regular cooking assistant query
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -357,7 +453,8 @@ async function handleGeneralQuery(command: string, context?: any): Promise<Voice
 • Ingredient substitutions and dietary modifications
 • Meal planning and portion guidance
 
-Provide conversational, friendly responses perfect for voice interaction. Include specific details like temperatures, times, and measurements. Keep responses concise but comprehensive. Context: ${JSON.stringify(context || {})}`
+Provide conversational, friendly responses perfect for voice interaction. Include specific details like temperatures, times, and measurements. Keep responses concise but comprehensive. Context: ${JSON.stringify(context || {})}
+${context?.currentPage === 'cooking-mode' ? '\nYou are currently helping with an active cooking session. Provide step-specific guidance.' : ''}`
           },
           {
             role: 'user',

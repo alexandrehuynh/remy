@@ -1,14 +1,16 @@
-import { Clock, Users, ChefHat } from "lucide-react";
+import { Clock, Users, ChefHat, Play } from "lucide-react";
 import { Recipe } from "@/lib/demo-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface RecipeCardProps {
   recipe: Recipe;
   onClick?: () => void;
+  onStartCooking?: () => void;
 }
 
-export function RecipeCard({ recipe, onClick }: RecipeCardProps) {
+export function RecipeCard({ recipe, onClick, onStartCooking }: RecipeCardProps) {
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'Easy': return 'bg-green-100 text-green-800 hover:bg-green-200';
@@ -47,21 +49,38 @@ export function RecipeCard({ recipe, onClick }: RecipeCardProps) {
           {recipe.description}
         </p>
         
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <Clock className="w-4 h-4" />
-              <span>{recipe.totalTime} min</span>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                <span>{recipe.totalTime} min</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Users className="w-4 h-4" />
+                <span>{recipe.servings}</span>
+              </div>
             </div>
             <div className="flex items-center gap-1">
-              <Users className="w-4 h-4" />
-              <span>{recipe.servings}</span>
+              <ChefHat className="w-4 h-4" />
+              <span className="text-xs uppercase tracking-wide">{recipe.category}</span>
             </div>
           </div>
-          <div className="flex items-center gap-1">
-            <ChefHat className="w-4 h-4" />
-            <span className="text-xs uppercase tracking-wide">{recipe.category}</span>
-          </div>
+          
+          {/* Start Cooking Button */}
+          {onStartCooking && (
+            <Button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onStartCooking();
+              }}
+              className="w-full btn-hero"
+              size="sm"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              Start Cooking
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

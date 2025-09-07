@@ -1,23 +1,25 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, ArrowRight, RotateCcw, Pause, Play, VolumeX, Volume2 } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft, ArrowRight, RotateCcw, Pause, Play, VolumeX, Volume2, CheckCircle2, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { Timer } from "@/components/Timer";
 import { demoRecipes } from "@/lib/demo-data";
 
-interface CookingModeProps {
-  recipeId?: string;
-}
-
-export function CookingMode({ recipeId = "1" }: CookingModeProps) {
+export function CookingMode() {
+  const { recipeId } = useParams<{ recipeId: string }>();
+  const navigate = useNavigate();
   const recipe = demoRecipes.find(r => r.id === recipeId) || demoRecipes[0];
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  
+  const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
   const [isSoundOn, setIsSoundOn] = useState(true);
   const [sessionStarted, setSessionStarted] = useState(false);
+  const [showIngredients, setShowIngredients] = useState(true);
+  const [activeTimers, setActiveTimers] = useState<{ id: string; duration: number; label: string }[]>([]);
 
   const currentStep = recipe.steps[currentStepIndex];
   const progress = ((currentStepIndex + 1) / recipe.steps.length) * 100;
@@ -41,26 +43,49 @@ export function CookingMode({ recipeId = "1" }: CookingModeProps) {
   };
 
 
-  const handleVoiceCommand = (command: string) => {
-    // Simulate voice command processing
-    const lowerCommand = command.toLowerCase();
-    
-    if (lowerCommand.includes('next')) {
-      handleNextStep();
-      return "Moving to next step";
-    } else if (lowerCommand.includes('back') || lowerCommand.includes('previous')) {
-      handlePreviousStep();
-      return "Going back to previous step";
-    } else if (lowerCommand.includes('repeat')) {
-      return currentStep.text;
-    } else if (lowerCommand.includes('ingredients')) {
-      const stepIngredients = currentStep.ingredients?.map(id => 
-        recipe.ingredients.find(ing => ing.id === id)?.name
-      ).filter(Boolean).join(', ');
-      return stepIngredients ? `You need: ${stepIngredients}` : "No specific ingredients for this step";
+  const handleIngredientToggle = (ingredientId: string) => {
+    setCheckedIngredients(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(ingredientId)) {
+        newSet.delete(ingredientId);
+      } else {
+        newSet.add(ingredientId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleVoiceIngredientCheck = (ingredientName: string) => {
+    const ingredient = recipe.ingredients.find(ing => 
+      ing.name.toLowerCase().includes(ingredientName.toLowerCase())
+    );
+    if (ingredient) {
+      handleIngredientToggle(ingredient.id);
+      return `${checkedIngredients.has(ingredient.id) ? 'Unchecked' : 'Checked'} ${ingredient.name}`;
     }
-    
-    return "I didn't understand that command. Try 'next step', 'go back', or 'repeat step'";
+    return `I couldn't find ${ingredientName} in the ingredient list`;
+  };
+
+  const getNextUncheckedIngredient = () => {
+    return recipe.ingredients.find(ing => !checkedIngredients.has(ing.id));
+  };
+
+  const handleTimerRequest = (minutes: number) => {
+    const newTimer = {
+      id: `timer-${Date.now()}`,
+      duration: minutes * 60, // convert to seconds
+      label: `Step ${currentStep.order} Timer`
+    };
+    setActiveTimers(prev => [...prev, newTimer]);
+  };
+
+  const handleTimerComplete = (timerId: string) => {
+    setActiveTimers(prev => prev.filter(timer => timer.id !== timerId));
+    // Play notification sound or show alert
+    if (isSoundOn && 'speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance('Timer finished!');
+      window.speechSynthesis.speak(utterance);
+    }
   };
 
   const currentStepIngredients = currentStep.ingredients?.map(id => 
@@ -73,7 +98,11 @@ export function CookingMode({ recipeId = "1" }: CookingModeProps) {
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Button variant="ghost" size="sm">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate('/')}
+            >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Exit Cooking
             </Button>
@@ -111,6 +140,59 @@ export function CookingMode({ recipeId = "1" }: CookingModeProps) {
           </div>
           <Progress value={progress} className="h-3" />
         </div>
+
+        {/* Ingredients Checklist */}
+        {showIngredients && (
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Ingredients Checklist</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">
+                    {checkedIngredients.size}/{recipe.ingredients.length} ready
+                  </Badge>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowIngredients(false)}
+                  >
+                    ✕
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {recipe.ingredients.map((ingredient) => {
+                  const isChecked = checkedIngredients.has(ingredient.id);
+                  return (
+                    <div 
+                      key={ingredient.id}
+                      className={`flex items-center space-x-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                        isChecked ? 'bg-cooking-success/10 border-cooking-success' : 'hover:bg-muted/30'
+                      }`}
+                      onClick={() => handleIngredientToggle(ingredient.id)}
+                    >
+                      <Checkbox 
+                        checked={isChecked}
+                        onChange={() => handleIngredientToggle(ingredient.id)}
+                        className="pointer-events-none"
+                      />
+                      <div className="flex-1">
+                        <div className={`font-medium ${
+                          isChecked ? 'line-through text-muted-foreground' : 'text-foreground'
+                        }`}>
+                          {ingredient.amount} {ingredient.unit} {ingredient.name}
+                        </div>
+                      </div>
+                      {isChecked && <CheckCircle2 className="w-4 h-4 text-cooking-success" />}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Current Step */}
         <Card className="border-2 border-primary/20">
@@ -162,14 +244,28 @@ export function CookingMode({ recipeId = "1" }: CookingModeProps) {
                   duration={currentStep.duration}
                   label={`Step ${currentStep.order}`}
                   autoStart={false}
+                  onComplete={() => handleTimerComplete(`step-${currentStep.id}`)}
                 />
               )}
+
+              {/* Active Voice Timers */}
+              {activeTimers.map((timer) => (
+                <Timer
+                  key={timer.id}
+                  duration={timer.duration}
+                  label={timer.label}
+                  autoStart={true}
+                  onComplete={() => handleTimerComplete(timer.id)}
+                />
+              ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* Voice Assistant */}
+        {/* Voice Assistant - Compact Mode */}
         <VoiceAssistant 
+          className="voice-assistant-compact"
+          compact={true}
           onStepNavigation={(direction) => {
             if (direction === 'next') {
               handleNextStep();
@@ -177,18 +273,25 @@ export function CookingMode({ recipeId = "1" }: CookingModeProps) {
               handlePreviousStep();
             }
           }}
-          onTimerRequest={(duration) => {
-            // Add timer functionality here
-            console.log(`Setting timer for ${duration} minutes`);
-          }}
+          onTimerRequest={handleTimerRequest}
           onRepeatRequest={() => {
-            // Read current step aloud
             console.log('Repeating current step');
+          }}
+          onIngredientCheck={(ingredientName) => {
+            const ingredient = recipe.ingredients.find(ing => 
+              ing.name.toLowerCase().includes(ingredientName.toLowerCase())
+            );
+            if (ingredient) {
+              handleIngredientToggle(ingredient.id);
+            }
           }}
           currentStepText={currentStep.text}
           context={{
             currentPage: 'cooking-mode',
-            currentStep: currentStepIndex
+            currentRecipe: recipe.title,
+            currentStep: currentStepIndex,
+            availableIngredients: recipe.ingredients.map(ing => ing.name),
+            checkedIngredients: Array.from(checkedIngredients)
           }}
         />
 
@@ -256,12 +359,9 @@ export function CookingMode({ recipeId = "1" }: CookingModeProps) {
             variant="outline" 
             size="sm" 
             className="touch-target"
-            onClick={() => {
-              // TODO: Show all ingredients
-              console.log("Showing ingredients");
-            }}
+            onClick={() => setShowIngredients(!showIngredients)}
           >
-            📋 Ingredients
+            📋 {showIngredients ? 'Hide' : 'Show'} Ingredients
           </Button>
 
           <Button 

@@ -7,8 +7,10 @@ import { RecipeCard } from "@/components/RecipeCard";
 import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { demoRecipes } from "@/lib/demo-data";
 import { categories } from "@/lib/constants";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -135,6 +137,9 @@ const Index = () => {
                   onClick={() => {
                     // TODO: Navigate to recipe detail page
                     console.log("Opening recipe:", recipe.title);
+                  }}
+                  onStartCooking={() => {
+                    navigate(`/cook/${recipe.id}`);
                   }}
                 />
               ))}

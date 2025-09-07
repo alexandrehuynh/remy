@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Volume2, Phone, PhoneOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useElevenLabsConversation } from '@/hooks/useElevenLabsConversation';
@@ -13,10 +14,14 @@ interface VoiceAssistantProps {
   onRepeatRequest?: () => void;
   currentStepText?: string;
   onRecipeSearch?: (recipes: unknown[]) => void;
+  onIngredientCheck?: (ingredientName: string) => void;
+  compact?: boolean; // New compact mode prop
   context?: {
     currentPage?: string;
     currentRecipe?: string;
     currentStep?: number;
+    availableIngredients?: string[];
+    checkedIngredients?: string[];
   };
 }
 
@@ -27,10 +32,15 @@ export function VoiceAssistant({
   onRepeatRequest,
   currentStepText,
   onRecipeSearch,
+  onIngredientCheck,
+  compact = false,
   context
 }: VoiceAssistantProps) {
+  const navigate = useNavigate();
   const [displayText, setDisplayText] = useState("Ready to talk with Chef Remy");
   const [messages, setMessages] = useState<string[]>([]);
+  const [showHistory, setShowHistory] = useState(!compact);
+  const [pendingRecipeSearch, setPendingRecipeSearch] = useState<string | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
@@ -55,8 +65,26 @@ export function VoiceAssistant({
       });
     },
     onMessage: (message: string) => {
-      setMessages(prev => [...prev.slice(-4), message]);
+      if (!compact) {
+        setMessages(prev => [...prev.slice(-4), message]);
+      }
       setDisplayText(message);
+      
+      // Check for recipe search confirmation patterns in the message
+      if (context?.currentPage === 'home' && message.toLowerCase().includes('would you like to start cooking')) {
+        setPendingRecipeSearch('detected');
+      }
+      
+      // Check for confirmation responses
+      if (pendingRecipeSearch && (message.toLowerCase().includes('yes') || message.toLowerCase().includes('let\'s cook'))) {
+        // Navigate to cooking mode with demo recipe
+        navigate('/cook/1');
+        setPendingRecipeSearch(null);
+        toast({
+          title: "Starting Cooking Session",
+          description: "Let's get cooking! I'll guide you through each step.",
+        });
+      }
     },
     onError: (error: string) => {
       console.error('ElevenLabs error:', error);
@@ -124,20 +152,23 @@ export function VoiceAssistant({
     return "Tap to start AI conversation";
   };
 
+  // Check if we should use compact mode (also check for className that includes 'compact')
+  const isCompactMode = compact || className.includes('compact');
+  
   return (
-    <Card className={`${className} border-2 border-border/50 overflow-hidden`}>
-      <CardContent className="p-6">
-        <div className={`flex transition-all duration-500 ${isElevenLabsConnected ? 'gap-6' : 'justify-center'}`}>
+    <Card className={`${className} border-2 border-border/50 overflow-hidden ${isCompactMode ? 'compact-voice-assistant' : ''}`}>
+      <CardContent className={isCompactMode ? "p-4" : "p-6"}>
+        <div className={`flex transition-all duration-500 ${isElevenLabsConnected && !isCompactMode ? 'gap-6' : 'justify-center'}`}>
           {/* Main Voice Interface */}
-          <div className={`flex flex-col items-center gap-4 ${isElevenLabsConnected ? 'w-1/2' : 'w-full'} transition-all duration-500`}>
+          <div className={`flex flex-col items-center gap-4 ${isElevenLabsConnected && !isCompactMode ? 'w-1/2' : 'w-full'} transition-all duration-500`}>
             
             {/* Voice Button with Wave Animation */}
             <div className="relative">
               <Button
                 onClick={handleVoiceToggle}
-                size="lg"
+                size={isCompactMode ? "default" : "lg"}
                 className={`
-                  relative w-24 h-24 rounded-full border-0 transition-all duration-300 
+                  relative ${isCompactMode ? 'w-16 h-16' : 'w-24 h-24'} rounded-full border-0 transition-all duration-300 
                   ${getVoiceStateColor()}
                   hover:scale-105 active:scale-95
                 `}
@@ -153,16 +184,16 @@ export function VoiceAssistant({
                 
                 {/* Icon */}
                 {isElevenLabsConnected ? (
-                  <PhoneOff className="w-10 h-10 text-white" />
+                  <PhoneOff className={`${isCompactMode ? 'w-6 h-6' : 'w-10 h-10'} text-white`} />
                 ) : isElevenLabsConnecting ? (
-                  <Phone className="w-10 h-10 text-white animate-pulse" />
+                  <Phone className={`${isCompactMode ? 'w-6 h-6' : 'w-10 h-10'} text-white animate-pulse`} />
                 ) : (
-                  <Phone className="w-10 h-10 text-white" />
+                  <Phone className={`${isCompactMode ? 'w-6 h-6' : 'w-10 h-10'} text-white`} />
                 )}
               </Button>
 
               {/* TTS Button - positioned to the side if conversation active */}
-              {currentStepText && (
+              {currentStepText && !isCompactMode && (
                 <div className={`absolute ${isElevenLabsConnected ? '-left-16' : '-right-16'} top-1/2 -translate-y-1/2`}>
                   <Button
                     onClick={handleReadStep}
@@ -179,11 +210,11 @@ export function VoiceAssistant({
 
             {/* Status Text */}
             <div className="text-center space-y-2">
-              <p className="text-sm font-medium text-foreground">
-                {getStatusText()}
+              <p className={`${isCompactMode ? 'text-xs' : 'text-sm'} font-medium text-foreground`}>
+                {isCompactMode && isElevenLabsConnected ? displayText.slice(0, 50) + (displayText.length > 50 ? '...' : '') : getStatusText()}
               </p>
               
-              {!isElevenLabsConnected && !isElevenLabsConnecting && (
+              {!isElevenLabsConnected && !isElevenLabsConnecting && !isCompactMode && (
                 <p className="text-xs text-muted-foreground">
                   Ask for recipes, nutrition info, or cooking tips
                 </p>
@@ -191,8 +222,8 @@ export function VoiceAssistant({
             </div>
           </div>
 
-          {/* Chat History - slides in when connected with fixed height */}
-          {isElevenLabsConnected && (
+          {/* Chat History - slides in when connected with fixed height - hidden in compact mode */}
+          {isElevenLabsConnected && !isCompactMode && (
             <div className="w-1/2 flex flex-col animate-slide-in-right">
               <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground border-b pb-2 mb-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
