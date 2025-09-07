@@ -2,11 +2,11 @@ import { ChefHat, Coffee, Sandwich, UtensilsCrossed, Cookie, Clock, Users, Flame
 
 // Recipe categories with icons
 export const categories = [
-  { name: 'Breakfast', icon: Coffee, color: 'text-orange-500' },
-  { name: 'Lunch', icon: Sandwich, color: 'text-green-500' },
-  { name: 'Dinner', icon: UtensilsCrossed, color: 'text-purple-500' },
-  { name: 'Snacks', icon: Cookie, color: 'text-yellow-500' },
-  { name: 'Dessert', icon: ChefHat, color: 'text-pink-500' }
+  { name: 'Breakfast', icon: Coffee, color: 'text-orange-500', description: 'Start your day right' },
+  { name: 'Lunch', icon: Sandwich, color: 'text-green-500', description: 'Midday meals' },
+  { name: 'Dinner', icon: UtensilsCrossed, color: 'text-purple-500', description: 'Evening feasts' },
+  { name: 'Snacks', icon: Cookie, color: 'text-yellow-500', description: 'Quick bites' },
+  { name: 'Dessert', icon: ChefHat, color: 'text-pink-500', description: 'Sweet treats' }
 ];
 
 // Recipe difficulty levels

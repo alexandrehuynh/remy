@@ -79,22 +79,22 @@ export function CookingMode() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header - Compact */}
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+      {/* Enhanced Header with Glow Effect */}
+      <header className="sticky top-0 z-40 bg-gradient-hero backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 border-b border-primary/20 shadow-lg">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <Button 
               variant="ghost" 
               size="sm"
               onClick={() => navigate('/')}
-              className="text-xs"
+              className="text-xs hover:bg-primary/10 transition-all duration-300 hover:scale-105"
             >
               <ArrowLeft className="w-3 h-3 mr-1" />
               Exit
             </Button>
             
             <div className="text-center">
-              <h1 className="text-sm font-medium text-foreground">{recipe.title}</h1>
+              <h1 className="text-sm font-medium gradient-text animate-fade-in">{recipe.title}</h1>
               <p className="text-xs text-muted-foreground">
                 Step {currentStepIndex + 1}/{recipe.steps.length} • {Math.round(progress)}%
               </p>
@@ -104,9 +104,10 @@ export function CookingMode() {
               variant="ghost" 
               size="sm"
               onClick={() => setIsSoundOn(!isSoundOn)}
+              className="hover:bg-primary/10 transition-all duration-300 hover:scale-105"
             >
               {isSoundOn ? (
-                <Volume2 className="w-3 h-3" />
+                <Volume2 className="w-3 h-3 animate-pulse-glow" />
               ) : (
                 <VolumeX className="w-3 h-3" />
               )}
@@ -116,35 +117,41 @@ export function CookingMode() {
       </header>
 
       <div className="flex h-[calc(100vh-80px)]">
-        {/* Sidebar - Ingredients & Controls */}
-        <aside className="w-80 border-r border-border bg-card/30 overflow-y-auto">
+        {/* Improved Sidebar with Better Contrast */}
+        <aside className="w-80 border-r border-border bg-card/50 backdrop-blur-sm overflow-y-auto">
           <div className="p-4 space-y-4">
-            {/* Progress Bar */}
-            <div className="space-y-1">
+            {/* Improved Progress Bar */}
+            <div className="space-y-2 animate-fade-in">
               <Progress value={progress} className="h-2" />
+              <p className="text-xs text-muted-foreground text-center">
+                {Math.round(progress)}% Complete
+              </p>
             </div>
 
-            {/* Ingredients Checklist - Compact */}
-            <Card className="border-0 shadow-none bg-transparent">
-              <CardHeader className="px-0 py-2">
+            {/* Improved Ingredients Checklist */}
+            <Card className="border border-border bg-card animate-scale-in shadow-sm">
+              <CardHeader className="px-3 py-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm">Ingredients</CardTitle>
-                  <Badge variant="outline" className="text-xs">
+                  <CardTitle className="text-sm font-semibold">Ingredients</CardTitle>
+                  <Badge variant="secondary" className="text-xs">
                     {checkedIngredients.size}/{recipe.ingredients.length}
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="px-0 py-0">
+              <CardContent className="px-3 py-0 pb-3">
                 <div className="space-y-1 max-h-32 overflow-y-auto">
-                  {recipe.ingredients.map((ingredient) => {
+                  {recipe.ingredients.map((ingredient, index) => {
                     const isChecked = checkedIngredients.has(ingredient.id);
                     return (
                       <div 
                         key={ingredient.id}
-                        className={`flex items-center space-x-2 p-2 rounded text-xs cursor-pointer transition-all ${
-                          isChecked ? 'bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-300' : 'hover:bg-muted/50'
+                        className={`flex items-center space-x-2 p-2 rounded text-xs cursor-pointer transition-all duration-300 hover:scale-[1.02] animate-fade-in ${
+                          isChecked 
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700' 
+                            : 'hover:bg-muted/50 text-foreground'
                         }`}
                         onClick={() => handleIngredientToggle(ingredient.id)}
+                        style={{ animationDelay: `${index * 0.05}s` }}
                       >
                         <Checkbox 
                           checked={isChecked}
@@ -160,12 +167,12 @@ export function CookingMode() {
               </CardContent>
             </Card>
 
-            {/* Quick Actions - Compact */}
-            <div className="grid grid-cols-2 gap-2">
+            {/* Improved Quick Actions */}
+            <div className="grid grid-cols-2 gap-2 animate-slide-in-left" style={{ animationDelay: '0.3s' }}>
               <Button 
                 variant="outline" 
                 size="sm"
-                className="text-xs py-2"
+                className="text-xs py-2 transition-all duration-300 hover:scale-105"
                 onClick={() => console.log("Repeating step")}
               >
                 <RotateCcw className="w-3 h-3 mr-1" />
@@ -175,7 +182,7 @@ export function CookingMode() {
               <Button 
                 variant="outline" 
                 size="sm"
-                className="text-xs py-2"
+                className="text-xs py-2 border-orange-500/50 text-orange-600 hover:bg-orange-50 transition-all duration-300 hover:scale-105"
                 onClick={() => console.log("Emergency help")}
               >
                 🆘 Help
@@ -222,21 +229,21 @@ export function CookingMode() {
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto">
           <div className="p-6 max-w-4xl mx-auto space-y-6">
-            {/* Current Step - Clean & Focused */}
-            <Card className="border border-primary/30 bg-gradient-to-r from-primary/5 to-transparent">
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-primary text-white rounded-full flex items-center justify-center font-bold text-sm">
+            {/* Improved Current Step with Better Readability */}
+            <Card className="border-2 border-primary/30 bg-card backdrop-blur-sm shadow-lg animate-scale-in">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-primary text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
                       {currentStep.order}
                     </div>
                     <div className="flex-1">
-                      <h2 className="text-lg font-semibold text-foreground">
+                      <h2 className="text-xl font-semibold text-foreground animate-fade-in">
                         Current Step
                       </h2>
                     </div>
                     {currentStep.duration && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-sm bg-orange-100 text-orange-800 border-orange-200">
                         {Math.floor(currentStep.duration / 60)}:{(currentStep.duration % 60).toString().padStart(2, '0')}
                       </Badge>
                     )}
@@ -289,13 +296,13 @@ export function CookingMode() {
             </Card>
 
 
-            {/* Navigation Controls - Cleaner */}
-            <div className="flex gap-3">
+            {/* Enhanced Navigation Controls */}
+            <div className="flex gap-4 animate-slide-in-left" style={{ animationDelay: '0.4s' }}>
               <Button
                 variant="outline"
                 onClick={handlePreviousStep}
                 disabled={currentStepIndex === 0}
-                className="flex-1"
+                className="flex-1 border-primary/50 hover:bg-primary/10 transition-all duration-300 hover:scale-105 disabled:opacity-50"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Previous
@@ -303,7 +310,7 @@ export function CookingMode() {
 
               {currentStepIndex === recipe.steps.length - 1 ? (
                 <Button
-                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                   onClick={() => {
                     console.log("Cooking completed!");
                   }}
@@ -313,7 +320,7 @@ export function CookingMode() {
               ) : (
                 <Button
                   onClick={handleNextStep}
-                  className="flex-1"
+                  className="flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
                   Next Step
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -322,33 +329,34 @@ export function CookingMode() {
             </div>
 
 
-            {/* Steps Overview - Compact */}
-            <Card>
+            {/* Improved Steps Overview */}
+            <Card className="border border-border bg-card backdrop-blur-sm animate-fade-in" style={{ animationDelay: '0.5s' }}>
               <CardContent className="p-4">
                 <h3 className="text-sm font-medium text-foreground mb-3">All Steps</h3>
-                <div className="space-y-1 max-h-64 overflow-y-auto">
+                <div className="space-y-2 max-h-64 overflow-y-auto">
                   {recipe.steps.map((step, index) => (
                     <div 
                       key={step.id}
                       className={`
-                        p-2 rounded border cursor-pointer transition-all text-xs
+                        p-3 rounded-lg border cursor-pointer transition-all duration-300 text-xs hover:scale-[1.02] animate-scale-in
                         ${index === currentStepIndex 
-                          ? 'bg-primary/10 border-primary' 
+                          ? 'bg-primary/10 border-primary/50 shadow-md' 
                           : index < currentStepIndex
-                            ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
-                            : 'bg-card hover:bg-muted/30'
+                            ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 text-green-800 dark:text-green-200'
+                            : 'bg-muted/30 border-muted hover:bg-muted/50'
                         }
                       `}
                       onClick={() => setCurrentStepIndex(index)}
+                      style={{ animationDelay: `${index * 0.05}s` }}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <div className={`
-                          w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold
+                          w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold transition-all
                           ${index === currentStepIndex 
                             ? 'bg-primary text-white' 
                             : index < currentStepIndex
                               ? 'bg-green-600 text-white'
-                              : 'bg-muted text-muted-foreground'
+                              : 'bg-muted-foreground/20 text-muted-foreground'
                           }
                         `}>
                           {step.order}
@@ -356,7 +364,7 @@ export function CookingMode() {
                         <p className={`
                           ${index < currentStepIndex ? 'line-through text-muted-foreground' : 'text-foreground'}
                         `}>
-                          {step.text.length > 60 ? step.text.slice(0, 60) + '...' : step.text}
+                          {step.text.length > 50 ? step.text.slice(0, 50) + '...' : step.text}
                         </p>
                       </div>
                     </div>
