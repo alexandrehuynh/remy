@@ -74,7 +74,7 @@ export const useElevenLabsConversation = ({
       
       // Start the conversation session with updated API
       const conversation = await Conversation.startSession({
-        agentId,
+        signedUrl: `https://api.elevenlabs.io/v1/convai/conversation?agent_id=${agentId}`,
         onConnect: () => {
           logger.debug('ElevenLabs conversation connected successfully');
           setIsConnected(true);

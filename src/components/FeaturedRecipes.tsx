@@ -49,7 +49,7 @@ export function FeaturedRecipes() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                   
                   {/* Floating badge */}
-                  <Badge className="absolute top-4 right-4 bg-primary/90 text-white animate-bounce-gentle">
+                  <Badge className="absolute top-4 right-4 bg-primary/90 text-white">
                     ⭐ Featured
                   </Badge>
 

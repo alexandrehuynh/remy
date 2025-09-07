@@ -62,10 +62,10 @@ export function BottomTabs() {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <div className={`relative ${isActive ? 'animate-bounce-gentle' : ''}`}>
+                <div className="relative">
                   <Icon className="w-6 h-6" />
                   {isActive && (
-                    <div className="absolute -inset-2 rounded-full bg-primary/20 animate-pulse-glow" />
+                    <div className="absolute -inset-2 rounded-full bg-primary/20" />
                   )}
                 </div>
                 <span className="text-xs font-medium">

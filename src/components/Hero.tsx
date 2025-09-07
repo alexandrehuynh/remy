@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Search, ChefHat } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { useNavigate } from "react-router-dom";
+import ratChefIcon from "@/assets/rat-chef-icon.png";
+import kitchenHeroBg from "@/assets/kitchen-hero-bg.jpg";
 
 interface HeroProps {
   onSearch?: (query: string) => void;
@@ -29,21 +31,29 @@ export function Hero({ onSearch, searchQuery = "", onSearchChange }: HeroProps) 
   };
 
   return (
-    <div className="relative min-h-[80vh] flex items-center justify-center bg-gradient-hero overflow-hidden">
-      <div className="absolute inset-0 bg-black/30" />
+    <div className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${kitchenHeroBg})` }}
+      />
+      <div className="absolute inset-0 bg-black/40" />
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 text-center space-y-8">
         {/* Brand Section */}
         <div className="mb-8">
           <div className="flex items-center justify-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center">
-              <ChefHat className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20">
+              <img 
+                src={ratChefIcon} 
+                alt="Chef Remy" 
+                className="w-12 h-12 object-contain"
+              />
             </div>
             <div>
               <h1 className="text-5xl md:text-6xl font-bold text-white">
                 Chef Remy
               </h1>
-              <p className="text-white/90 text-lg mt-2">Your AI-Powered Cooking Companion</p>
+              <p className="text-white/90 text-lg mt-2">Your Personal Sous Chef for Vibe Cooking</p>
             </div>
           </div>
         </div>
