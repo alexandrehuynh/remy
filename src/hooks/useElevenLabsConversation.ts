@@ -71,9 +71,11 @@ export const useElevenLabsConversation = ({
       }
       
       // Start the conversation session with proper callback configuration
+      // TODO: Fix ElevenLabs conversation configuration
+      throw new Error('ElevenLabs conversation temporarily disabled due to API changes');
+      /*
       const conversation = await Conversation.startSession({
         agentId,
-        apiKey,
         onConnect: () => {
           logger.debug('ElevenLabs conversation connected successfully');
           setIsConnected(true);
@@ -132,6 +134,7 @@ export const useElevenLabsConversation = ({
       conversationRef.current = conversation;
       
       logger.debug('ElevenLabs conversation setup complete with callbacks')
+      */
 
     } catch (error) {
       logger.error('Failed to start conversation:', error);

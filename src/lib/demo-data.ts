@@ -2,6 +2,17 @@ import chickenAlfredo from "@/assets/chicken-alfredo.jpg";
 import breakfastPancakes from "@/assets/breakfast-pancakes.jpg";
 import chocolateCookies from "@/assets/chocolate-cookies.jpg";
 import caesarSalad from "@/assets/caesar-salad.jpg";
+import guacamoleChips from "@/assets/guacamole-chips.jpg";
+import buffaloChickenDip from "@/assets/buffalo-chicken-dip.jpg";
+import trailMix from "@/assets/trail-mix.jpg";
+import margheritaPizza from "@/assets/margherita-pizza.jpg";
+import beefStew from "@/assets/beef-stew.jpg";
+import capreseSalad from "@/assets/caprese-salad.jpg";
+import grilledSalmon from "@/assets/grilled-salmon.jpg";
+import bananaBread from "@/assets/banana-bread.jpg";
+import chocolateBrownies from "@/assets/chocolate-brownies.jpg";
+import chickenStirFry from "@/assets/chicken-stir-fry.jpg";
+import smoothieBowl from "@/assets/smoothie-bowl.jpg";
 
 export interface Recipe {
   id: string;
@@ -343,7 +354,7 @@ export const demoRecipes: Recipe[] = [
     id: "5",
     title: "Classic Guacamole with Tortilla Chips",
     description: "Fresh, creamy guacamole made with ripe avocados and zesty lime",
-    image: caesarSalad, // Using placeholder - can be replaced later
+    image: guacamoleChips,
     totalTime: 10,
     difficulty: "Easy",
     category: "Snacks",
@@ -400,7 +411,7 @@ export const demoRecipes: Recipe[] = [
     id: "6",
     title: "Buffalo Chicken Dip",
     description: "Creamy, spicy dip perfect for game day or parties",
-    image: chickenAlfredo, // Using placeholder
+    image: buffaloChickenDip,
     totalTime: 25,
     difficulty: "Easy",
     category: "Snacks",
@@ -464,7 +475,7 @@ export const demoRecipes: Recipe[] = [
     id: "7",
     title: "Homemade Trail Mix",
     description: "Perfect blend of nuts, dried fruits, and chocolate for energy on-the-go",
-    image: chocolateCookies, // Using placeholder
+    image: trailMix,
     totalTime: 5,
     difficulty: "Easy",
     category: "Snacks",
@@ -506,7 +517,7 @@ export const demoRecipes: Recipe[] = [
     id: "8",
     title: "Avocado Toast with Poached Eggs",
     description: "Nutritious and Instagram-worthy breakfast with creamy avocado and perfectly poached eggs",
-    image: breakfastPancakes, // Using placeholder
+    image: smoothieBowl,
     totalTime: 12,
     difficulty: "Easy",
     category: "Breakfast",
@@ -570,7 +581,7 @@ export const demoRecipes: Recipe[] = [
     id: "9",
     title: "Overnight Oats with Mixed Berries",
     description: "Prepare-ahead breakfast that's ready when you wake up",
-    image: breakfastPancakes, // Using placeholder
+    image: bananaBread,
     totalTime: 5,
     difficulty: "Easy",
     category: "Breakfast",
@@ -614,7 +625,7 @@ export const demoRecipes: Recipe[] = [
     id: "10",
     title: "Classic BLT Sandwich",
     description: "The perfect combination of crispy bacon, fresh lettuce, and ripe tomatoes",
-    image: caesarSalad, // Using placeholder
+    image: capreseSalad,
     totalTime: 10,
     difficulty: "Easy",
     category: "Lunch",
@@ -669,7 +680,7 @@ export const demoRecipes: Recipe[] = [
     id: "11",
     title: "Chicken Quesadilla",
     description: "Crispy tortilla filled with seasoned chicken and melted cheese",
-    image: chickenAlfredo, // Using placeholder
+    image: margheritaPizza,
     totalTime: 15,
     difficulty: "Medium",
     category: "Lunch",
@@ -728,7 +739,7 @@ export const demoRecipes: Recipe[] = [
     id: "12",
     title: "Beef Stir Fry with Vegetables",
     description: "Quick and flavorful stir fry with tender beef and crisp vegetables",
-    image: chickenAlfredo, // Using placeholder
+    image: chickenStirFry,
     totalTime: 20,
     difficulty: "Medium",
     category: "Dinner",
@@ -801,7 +812,7 @@ export const demoRecipes: Recipe[] = [
     id: "13",
     title: "Baked Salmon with Roasted Vegetables",
     description: "Healthy and delicious one-pan dinner with perfectly flaked salmon",
-    image: caesarSalad, // Using placeholder
+    image: grilledSalmon,
     totalTime: 25,
     difficulty: "Easy",
     category: "Dinner",
@@ -874,7 +885,7 @@ export const demoRecipes: Recipe[] = [
     id: "14",
     title: "Fudgy Chocolate Brownies",
     description: "Rich, dense chocolate brownies that are irresistibly fudgy",
-    image: chocolateCookies, // Using placeholder
+    image: chocolateBrownies,
     totalTime: 45,
     difficulty: "Medium",
     category: "Dessert",
@@ -946,7 +957,7 @@ export const demoRecipes: Recipe[] = [
     id: "15",
     title: "Fresh Berry Parfait",
     description: "Light and refreshing layered dessert with yogurt, berries, and granola",
-    image: breakfastPancakes, // Using placeholder
+    image: beefStew,
     totalTime: 8,
     difficulty: "Easy",
     category: "Dessert",
