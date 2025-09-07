@@ -36,7 +36,19 @@ serve(async (req) => {
   }
 
   try {
-    const { command, context }: VoiceChatRequest = await req.json()
+    let command: string;
+    let context: any;
+
+    // Handle both GET (query params) and POST (JSON body) requests
+    if (req.method === 'GET') {
+      const url = new URL(req.url);
+      command = url.searchParams.get('command') || '';
+      context = url.searchParams.get('context') ? JSON.parse(url.searchParams.get('context')!) : undefined;
+    } else {
+      const body = await req.json();
+      command = body.command || body.ingredients || '';
+      context = body.context;
+    }
 
     if (!command) {
       throw new Error('Command is required')
