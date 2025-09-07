@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useElevenLabsConversation } from '@/hooks/useElevenLabsConversation';
 import { useToast } from '@/components/ui/use-toast';
 import { logger } from '@/lib/logger';
+import voiceIcon from "@/assets/voice.png";
 
 interface VoiceAssistantProps {
   className?: string;
@@ -223,15 +224,21 @@ export function VoiceAssistant({
           <div className={`${isSidebarMode ? 'w-full' : `flex flex-col items-center gap-4 ${isElevenLabsConnected && !isCompactMode ? 'w-1/2' : 'w-full'} transition-all duration-500`}`}>
             
             {/* Voice Button with Wave Animation */}
-            <div className={`relative ${isSidebarMode ? 'flex justify-center' : ''}}`}>
+            <div className="relative flex justify-center">
               <Button
                 onClick={handleVoiceToggle}
                 size={isSidebarMode ? "default" : isCompactMode ? "default" : "lg"}
                 className={`
                   relative ${isSidebarMode ? 'w-12 h-12' : isCompactMode ? 'w-16 h-16' : 'w-24 h-24'} rounded-full border-0 transition-all duration-300 
-                  ${getVoiceStateColor()}
-                  hover:scale-105 active:scale-95
+                  ${isElevenLabsConnected || isElevenLabsConnecting ? getVoiceStateColor() : 'bg-transparent'}
+                  hover:scale-105 active:scale-95 flex items-center justify-center
                 `}
+                style={!isElevenLabsConnected && !isElevenLabsConnecting ? {
+                  backgroundImage: `url(${voiceIcon})`,
+                  backgroundSize: 'contain',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'center'
+                } : undefined}
                 disabled={isElevenLabsConnecting}
               >
                 {/* Wave Animation Rings */}
@@ -242,14 +249,10 @@ export function VoiceAssistant({
                   </>
                 )}
                 
-                {/* Icon */}
+                {/* Voice Icon */}
                 {isElevenLabsConnected ? (
                   <PhoneOff className={`${isSidebarMode ? 'w-4 h-4' : isCompactMode ? 'w-6 h-6' : 'w-10 h-10'} text-white`} />
-                ) : isElevenLabsConnecting ? (
-                  <Phone className={`${isSidebarMode ? 'w-4 h-4' : isCompactMode ? 'w-6 h-6' : 'w-10 h-10'} text-white animate-pulse`} />
-                ) : (
-                  <Phone className={`${isSidebarMode ? 'w-4 h-4' : isCompactMode ? 'w-6 h-6' : 'w-10 h-10'} text-white`} />
-                )}
+                ) : null}
               </Button>
 
               {/* TTS Button - positioned to the side if conversation active */}
@@ -307,7 +310,7 @@ export function VoiceAssistant({
               </div>
               
               {/* Fixed height chat container with scroll */}
-              <div className={`flex-1 ${isSidebarMode ? 'h-32' : 'h-48'} bg-gray-50 dark:bg-gray-900/20 rounded-lg border overflow-hidden`}>
+              <div className={`${isSidebarMode ? 'h-48 max-h-48' : 'h-48 max-h-48'} bg-gray-50 dark:bg-gray-900/20 rounded-lg border overflow-hidden flex-shrink-0`}>
                 <div ref={chatContainerRef} className="h-full overflow-y-auto p-3 space-y-2 scroll-smooth">
                   {messages.length > 0 ? (
                     messages.map((message, index) => (

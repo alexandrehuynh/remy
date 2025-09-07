@@ -22,7 +22,7 @@ export function CookingMode() {
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
 
   const currentStep = recipe.steps[currentStepIndex];
-  const progress = ((currentStepIndex + 1) / recipe.steps.length) * 100;
+  const progress = (completedSteps.size / recipe.steps.length) * 100;
 
   useEffect(() => {
     if (!sessionStarted) {
@@ -130,80 +130,11 @@ export function CookingMode() {
       </header>
 
       <div className="flex h-[calc(100vh-80px)]">
-        {/* Improved Sidebar with Better Contrast */}
+        {/* Reorganized Sidebar */}
         <aside className="w-80 border-r border-border bg-card/50 backdrop-blur-sm overflow-y-auto">
           <div className="p-4 space-y-4">
-            {/* Improved Progress Bar */}
-            <div className="space-y-2 animate-fade-in">
-              <Progress value={progress} className="h-2" />
-              <p className="text-xs text-muted-foreground text-center">
-                {Math.round(progress)}% Complete
-              </p>
-            </div>
-
-            {/* Improved Ingredients Checklist */}
-            <Card className="border border-border bg-card animate-scale-in shadow-sm">
-              <CardHeader className="px-3 py-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-semibold">Ingredients</CardTitle>
-                  <Badge variant="secondary" className="text-xs">
-                    {checkedIngredients.size}/{recipe.ingredients.length}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="px-3 py-0 pb-3">
-                <div className="space-y-1 max-h-32 overflow-y-auto">
-                  {recipe.ingredients.map((ingredient, index) => {
-                    const isChecked = checkedIngredients.has(ingredient.id);
-                    return (
-                      <div 
-                        key={ingredient.id}
-                        className={`flex items-center space-x-2 p-2 rounded text-xs cursor-pointer transition-all duration-300 hover:scale-[1.02] animate-fade-in ${
-                          isChecked 
-                            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700' 
-                            : 'hover:bg-muted/50 text-foreground'
-                        }`}
-                        onClick={() => handleIngredientToggle(ingredient.id)}
-                        style={{ animationDelay: `${index * 0.05}s` }}
-                      >
-                        <Checkbox 
-                          checked={isChecked}
-                          className="w-3 h-3"
-                        />
-                        <span className={isChecked ? 'line-through' : ''}>
-                          {ingredient.amount} {ingredient.unit} {ingredient.name}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Improved Quick Actions */}
-            <div className="grid grid-cols-2 gap-2 animate-slide-in-left" style={{ animationDelay: '0.3s' }}>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="text-xs py-2 transition-all duration-300 hover:scale-105"
-                onClick={() => console.log("Repeating step")}
-              >
-                <RotateCcw className="w-3 h-3 mr-1" />
-                Repeat
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="text-xs py-2 border-orange-500/50 text-orange-600 hover:bg-orange-50 transition-all duration-300 hover:scale-105"
-                onClick={() => console.log("Emergency help")}
-              >
-                🆘 Help
-              </Button>
-            </div>
-
-            {/* Voice Assistant - Always Visible */}
-            <div className="border-t pt-4 mt-4">
+            {/* Voice Assistant - Moved to Top */}
+            <div className="animate-fade-in">
               <VoiceAssistant 
                 className="voice-assistant-sidebar"
                 compact={false}
@@ -254,81 +185,197 @@ export function CookingMode() {
                 }}
               />
             </div>
-          </div>
-        </aside>
 
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-6 max-w-4xl mx-auto space-y-6">
-            {/* Improved Current Step with Better Readability */}
-            <Card className="border-2 border-primary/30 bg-card backdrop-blur-sm shadow-lg animate-scale-in">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-primary text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
-                      {currentStep.order}
-                    </div>
-                    <div className="flex-1">
-                      <h2 className="text-xl font-semibold text-foreground animate-fade-in">
-                        Current Step
-                      </h2>
-                    </div>
-                    {currentStep.duration && (
-                      <Badge variant="secondary" className="text-sm bg-orange-100 text-orange-800 border-orange-200">
-                        {Math.floor(currentStep.duration / 60)}:{(currentStep.duration % 60).toString().padStart(2, '0')}
-                      </Badge>
-                    )}
-                  </div>
+            {/* Progress Bar */}
+            <div className="space-y-2 animate-fade-in">
+              <Progress value={progress} className="h-2" />
+              <p className="text-xs text-muted-foreground text-center">
+                {Math.round(progress)}% Complete
+              </p>
+            </div>
 
-                  <p className="text-base leading-relaxed text-foreground">
-                    {currentStep.text}
-                  </p>
-
-                  {/* Ingredients for this step - Compact */}
-                  {currentStepIngredients.length > 0 && (
-                    <div className="space-y-2">
-                      <h3 className="text-sm font-medium text-foreground">Need for this step:</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {currentStepIngredients.map((ingredient) => (
-                          <Badge 
-                            key={ingredient!.id}
-                            variant="outline"
-                            className="text-xs"
-                          >
-                            {ingredient!.amount} {ingredient!.unit} {ingredient!.name}
-                          </Badge>
-                        ))}
+            {/* Ingredients Checklist - No Scroll */}
+            <Card className="border border-border bg-card animate-scale-in shadow-sm">
+              <CardHeader className="px-3 py-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-semibold">Ingredients</CardTitle>
+                  <Badge variant="secondary" className="text-xs">
+                    {checkedIngredients.size}/{recipe.ingredients.length}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="px-3 py-0 pb-3">
+                <div className="space-y-1">
+                  {recipe.ingredients.map((ingredient, index) => {
+                    const isChecked = checkedIngredients.has(ingredient.id);
+                    return (
+                      <div 
+                        key={ingredient.id}
+                        className={`flex items-center space-x-2 p-2 rounded text-xs cursor-pointer transition-all duration-300 hover:scale-[1.02] animate-fade-in ${
+                          isChecked 
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700' 
+                            : 'hover:bg-muted/50 text-foreground'
+                        }`}
+                        onClick={() => handleIngredientToggle(ingredient.id)}
+                        style={{ animationDelay: `${index * 0.05}s` }}
+                      >
+                        <Checkbox 
+                          checked={isChecked}
+                          className="w-3 h-3"
+                        />
+                        <span className={isChecked ? 'line-through' : ''}>
+                          {ingredient.amount} {ingredient.unit} {ingredient.name}
+                        </span>
                       </div>
-                    </div>
-                  )}
-
-                  {/* Timer for this step */}
-                  {currentStep.duration && (
-                    <Timer 
-                      duration={currentStep.duration}
-                      label={`Step ${currentStep.order}`}
-                      autoStart={false}
-                      onComplete={() => handleTimerComplete(`step-${currentStep.id}`)}
-                    />
-                  )}
-
-                  {/* Active Voice Timers */}
-                  {activeTimers.map((timer) => (
-                    <Timer
-                      key={timer.id}
-                      duration={timer.duration}
-                      label={timer.label}
-                      autoStart={true}
-                      onComplete={() => handleTimerComplete(timer.id)}
-                    />
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
 
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 gap-2 animate-slide-in-left" style={{ animationDelay: '0.3s' }}>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="text-xs py-2 transition-all duration-300 hover:scale-105"
+                onClick={() => console.log("Repeating step")}
+              >
+                <RotateCcw className="w-3 h-3 mr-1" />
+                Repeat
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="text-xs py-2 border-orange-500/50 text-orange-600 hover:bg-orange-50 transition-all duration-300 hover:scale-105"
+                onClick={() => console.log("Emergency help")}
+              >
+                🆘 Help
+              </Button>
+            </div>
+          </div>
+        </aside>
 
-            {/* Enhanced Navigation Controls */}
-            <div className="flex gap-4 animate-slide-in-left" style={{ animationDelay: '0.4s' }}>
+        {/* Main Content Area - Reorganized */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-6 space-y-6">
+            {/* Current Step and All Steps Side by Side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Current Step */}
+              <Card className="border-2 border-primary/30 bg-card backdrop-blur-sm shadow-lg animate-scale-in">
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gradient-primary text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
+                        {currentStep.order}
+                      </div>
+                      <div className="flex-1">
+                        <h2 className="text-xl font-semibold text-foreground animate-fade-in">
+                          Current Step
+                        </h2>
+                      </div>
+                      {currentStep.duration && (
+                        <Badge variant="secondary" className="text-sm bg-orange-100 text-orange-800 border-orange-200">
+                          {Math.floor(currentStep.duration / 60)}:{(currentStep.duration % 60).toString().padStart(2, '0')}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <p className="text-base leading-relaxed text-foreground">
+                      {currentStep.text}
+                    </p>
+
+                    {/* Ingredients for this step */}
+                    {currentStepIngredients.length > 0 && (
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium text-foreground">Need for this step:</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {currentStepIngredients.map((ingredient) => (
+                            <Badge 
+                              key={ingredient!.id}
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              {ingredient!.amount} {ingredient!.unit} {ingredient!.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Timer for this step */}
+                    {currentStep.duration && (
+                      <Timer 
+                        duration={currentStep.duration}
+                        label={`Step ${currentStep.order}`}
+                        autoStart={false}
+                        onComplete={() => handleTimerComplete(`step-${currentStep.id}`)}
+                      />
+                    )}
+
+                    {/* Active Voice Timers */}
+                    {activeTimers.map((timer) => (
+                      <Timer
+                        key={timer.id}
+                        duration={timer.duration}
+                        label={timer.label}
+                        autoStart={true}
+                        onComplete={() => handleTimerComplete(timer.id)}
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* All Steps - No Scroll, Full Text */}
+              <Card className="border border-border bg-card backdrop-blur-sm animate-fade-in">
+                <CardContent className="p-4">
+                  <h3 className="text-sm font-medium text-foreground mb-3">All Steps</h3>
+                  <div className="space-y-2">
+                    {recipe.steps.map((step, index) => (
+                      <div 
+                        key={step.id}
+                        className={`
+                          p-3 rounded-lg border cursor-pointer transition-all duration-300 text-xs hover:scale-[1.02] animate-scale-in
+                          ${index === currentStepIndex 
+                            ? 'bg-primary/10 border-primary/50 shadow-md' 
+                            : completedSteps.has(index)
+                              ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 text-green-800 dark:text-green-200'
+                              : 'bg-muted/30 border-muted hover:bg-muted/50'
+                          }
+                        `}
+                        onClick={() => setCurrentStepIndex(index)}
+                        style={{ animationDelay: `${index * 0.05}s` }}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={`
+                            w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold transition-all flex-shrink-0 mt-0.5
+                            ${index === currentStepIndex 
+                              ? 'bg-primary text-white' 
+                              : completedSteps.has(index)
+                                ? 'bg-green-600 text-white'
+                                : 'bg-muted-foreground/20 text-muted-foreground'
+                            }
+                          `}>
+                            {step.order}
+                          </div>
+                          <p className={`
+                            flex-1 leading-relaxed
+                            ${completedSteps.has(index) ? 'line-through text-muted-foreground' : 'text-foreground'}
+                          `}>
+                            {step.text}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Navigation Controls */}
+            <div className="flex gap-4 animate-slide-in-left">
               <Button
                 variant="outline"
                 onClick={handlePreviousStep}
@@ -358,51 +405,6 @@ export function CookingMode() {
                 </Button>
               )}
             </div>
-
-
-            {/* Improved Steps Overview */}
-            <Card className="border border-border bg-card backdrop-blur-sm animate-fade-in" style={{ animationDelay: '0.5s' }}>
-              <CardContent className="p-4">
-                <h3 className="text-sm font-medium text-foreground mb-3">All Steps</h3>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {recipe.steps.map((step, index) => (
-                    <div 
-                      key={step.id}
-                      className={`
-                        p-3 rounded-lg border cursor-pointer transition-all duration-300 text-xs hover:scale-[1.02] animate-scale-in
-                        ${index === currentStepIndex 
-                          ? 'bg-primary/10 border-primary/50 shadow-md' 
-                          : completedSteps.has(index)
-                            ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 text-green-800 dark:text-green-200'
-                            : 'bg-muted/30 border-muted hover:bg-muted/50'
-                        }
-                      `}
-                      onClick={() => setCurrentStepIndex(index)}
-                      style={{ animationDelay: `${index * 0.05}s` }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`
-                          w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold transition-all
-                          ${index === currentStepIndex 
-                            ? 'bg-primary text-white' 
-                            : completedSteps.has(index)
-                              ? 'bg-green-600 text-white'
-                              : 'bg-muted-foreground/20 text-muted-foreground'
-                          }
-                        `}>
-                          {step.order}
-                        </div>
-                        <p className={`
-                          ${completedSteps.has(index) ? 'line-through text-muted-foreground' : 'text-foreground'}
-                        `}>
-                          {step.text.length > 50 ? step.text.slice(0, 50) + '...' : step.text}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </main>
       </div>
