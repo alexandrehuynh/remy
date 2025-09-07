@@ -15,13 +15,25 @@ interface VoiceAssistantProps {
   currentStepText?: string;
   onRecipeSearch?: (recipes: unknown[]) => void;
   onIngredientCheck?: (ingredientName: string) => void;
+  onStepCompletion?: (stepIndex?: number) => void;
   compact?: boolean; // New compact mode prop
   context?: {
     currentPage?: string;
     currentRecipe?: string;
     currentStep?: number;
+    totalSteps?: number;
+    completedSteps?: number[];
     availableIngredients?: string[];
     checkedIngredients?: string[];
+    activeTimers?: Array<{ label: string; remaining: number }>;
+    cookingSessionStarted?: boolean;
+    recipeSteps?: Array<{
+      stepNumber: number;
+      text: string;
+      isCompleted: boolean;
+      isCurrent: boolean;
+      duration?: number;
+    }>;
   };
 }
 
@@ -33,6 +45,7 @@ export function VoiceAssistant({
   currentStepText,
   onRecipeSearch,
   onIngredientCheck,
+  onStepCompletion,
   compact = false,
   context
 }: VoiceAssistantProps) {
@@ -50,6 +63,7 @@ export function VoiceAssistant({
     startConversation,
     endConversation
   } = useElevenLabsConversation({
+    context,
     onConnect: () => {
       setDisplayText("🤖 Connected to Chef Remy AI - Start talking!");
       toast({
@@ -83,6 +97,51 @@ export function VoiceAssistant({
         toast({
           title: "Starting Cooking Session",
           description: "Let's get cooking! I'll guide you through each step.",
+        });
+      }
+      
+      // Process cooking mode commands
+      if (context?.currentPage === 'cooking-mode') {
+        const lowerMessage = message.toLowerCase();
+        
+        // Step completion commands
+        if (lowerMessage.includes('finished') || lowerMessage.includes('done') || lowerMessage.includes('complete')) {
+          if (lowerMessage.includes('step')) {
+            onStepCompletion?.();
+            toast({
+              title: "Step Completed",
+              description: "Moving to the next step!",
+            });
+          }
+        }
+        
+        // Navigation commands
+        if (lowerMessage.includes('next step')) {
+          onStepNavigation?.('next');
+        } else if (lowerMessage.includes('previous step') || lowerMessage.includes('go back')) {
+          onStepNavigation?.('previous');
+        }
+        
+        // Timer commands
+        const timerMatch = lowerMessage.match(/set.*timer.*(\d+).*minute/);
+        if (timerMatch) {
+          const minutes = parseInt(timerMatch[1]);
+          onTimerRequest?.(minutes);
+          toast({
+            title: "Timer Set",
+            description: `Timer set for ${minutes} minutes`,
+          });
+        }
+        
+        // Ingredient checking commands
+        context.availableIngredients?.forEach(ingredient => {
+          if (lowerMessage.includes(ingredient.toLowerCase()) && (lowerMessage.includes('check') || lowerMessage.includes('mark'))) {
+            onIngredientCheck?.(ingredient);
+            toast({
+              title: "Ingredient Checked",
+              description: `Marked ${ingredient} as used`,
+            });
+          }
         });
       }
     },

@@ -19,6 +19,7 @@ export function CookingMode() {
   const [isSoundOn, setIsSoundOn] = useState(true);
   const [sessionStarted, setSessionStarted] = useState(false);
   const [activeTimers, setActiveTimers] = useState<{ id: string; duration: number; label: string }[]>([]);
+  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
 
   const currentStep = recipe.steps[currentStepIndex];
   const progress = ((currentStepIndex + 1) / recipe.steps.length) * 100;
@@ -31,6 +32,8 @@ export function CookingMode() {
 
   const handleNextStep = () => {
     if (currentStepIndex < recipe.steps.length - 1) {
+      // Mark current step as completed
+      setCompletedSteps(prev => new Set(prev.add(currentStepIndex)));
       setCurrentStepIndex(currentStepIndex + 1);
     }
   };
@@ -38,6 +41,16 @@ export function CookingMode() {
   const handlePreviousStep = () => {
     if (currentStepIndex > 0) {
       setCurrentStepIndex(currentStepIndex - 1);
+    }
+  };
+
+  const handleStepCompletion = (stepIndex?: number) => {
+    const targetStep = stepIndex ?? currentStepIndex;
+    setCompletedSteps(prev => new Set(prev.add(targetStep)));
+    
+    // Auto-advance to next step if we completed the current step
+    if (targetStep === currentStepIndex && currentStepIndex < recipe.steps.length - 1) {
+      setCurrentStepIndex(currentStepIndex + 1);
     }
   };
 
@@ -213,13 +226,31 @@ export function CookingMode() {
                     handleIngredientToggle(ingredient.id);
                   }
                 }}
+                onStepCompletion={handleStepCompletion}
                 currentStepText={currentStep.text}
                 context={{
                   currentPage: 'cooking-mode',
                   currentRecipe: recipe.title,
                   currentStep: currentStepIndex,
+                  totalSteps: recipe.steps.length,
+                  completedSteps: Array.from(completedSteps),
                   availableIngredients: recipe.ingredients.map(ing => ing.name),
-                  checkedIngredients: Array.from(checkedIngredients)
+                  checkedIngredients: Array.from(checkedIngredients).map(id => {
+                    const ing = recipe.ingredients.find(i => i.id === id);
+                    return ing ? ing.name : id;
+                  }),
+                  activeTimers: activeTimers.map(t => ({
+                    label: t.label,
+                    remaining: t.duration
+                  })),
+                  cookingSessionStarted: sessionStarted,
+                  recipeSteps: recipe.steps.map((step, index) => ({
+                    stepNumber: index,
+                    text: step.text,
+                    isCompleted: completedSteps.has(index),
+                    isCurrent: index === currentStepIndex,
+                    duration: step.duration
+                  }))
                 }}
               />
             </div>
@@ -341,7 +372,7 @@ export function CookingMode() {
                         p-3 rounded-lg border cursor-pointer transition-all duration-300 text-xs hover:scale-[1.02] animate-scale-in
                         ${index === currentStepIndex 
                           ? 'bg-primary/10 border-primary/50 shadow-md' 
-                          : index < currentStepIndex
+                          : completedSteps.has(index)
                             ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 text-green-800 dark:text-green-200'
                             : 'bg-muted/30 border-muted hover:bg-muted/50'
                         }
@@ -354,7 +385,7 @@ export function CookingMode() {
                           w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold transition-all
                           ${index === currentStepIndex 
                             ? 'bg-primary text-white' 
-                            : index < currentStepIndex
+                            : completedSteps.has(index)
                               ? 'bg-green-600 text-white'
                               : 'bg-muted-foreground/20 text-muted-foreground'
                           }
@@ -362,7 +393,7 @@ export function CookingMode() {
                           {step.order}
                         </div>
                         <p className={`
-                          ${index < currentStepIndex ? 'line-through text-muted-foreground' : 'text-foreground'}
+                          ${completedSteps.has(index) ? 'line-through text-muted-foreground' : 'text-foreground'}
                         `}>
                           {step.text.length > 50 ? step.text.slice(0, 50) + '...' : step.text}
                         </p>

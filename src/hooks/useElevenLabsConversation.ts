@@ -8,6 +8,7 @@ interface UseElevenLabsConversationOptions {
   onDisconnect?: () => void;
   onMessage?: (message: string) => void;
   onError?: (error: string) => void;
+  context?: Record<string, any>;
 }
 
 export const useElevenLabsConversation = ({
@@ -15,7 +16,8 @@ export const useElevenLabsConversation = ({
   onConnect,
   onDisconnect,
   onMessage,
-  onError
+  onError,
+  context
 }: UseElevenLabsConversationOptions = {}) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -70,10 +72,7 @@ export const useElevenLabsConversation = ({
         throw new Error('Invalid ElevenLabs agent ID configured');
       }
       
-      // Start the conversation session with proper callback configuration
-      // TODO: Fix ElevenLabs conversation configuration
-      throw new Error('ElevenLabs conversation temporarily disabled due to API changes');
-      /*
+      // Start the conversation session with updated API
       const conversation = await Conversation.startSession({
         agentId,
         onConnect: () => {
@@ -81,6 +80,15 @@ export const useElevenLabsConversation = ({
           setIsConnected(true);
           setIsConnecting(false);
           onConnect?.();
+          
+          // Send initial context to the agent
+          if (context) {
+            const contextMessage = `Context: ${JSON.stringify(context)}`;
+            logger.debug('Sending context to agent:', contextMessage);
+            // Note: Context should be sent as a system message or initial prompt
+            // This depends on how the ElevenLabs agent is configured to handle context
+          }
+          
           onMessage?.('🤖 Connected to Chef Remy AI - ready to help with cooking!');
         },
         onDisconnect: () => {
@@ -92,7 +100,7 @@ export const useElevenLabsConversation = ({
         onMessage: (message: any) => {
           logger.debug('ElevenLabs message received:', message);
           if (message) {
-            // Handle different message types
+            // Handle different message types based on current API structure
             if (message.type === 'user_transcript' && message.transcript) {
               onMessage?.(`You: ${message.transcript}`);
             } else if (message.type === 'agent_response' && message.response) {
@@ -133,15 +141,14 @@ export const useElevenLabsConversation = ({
       
       conversationRef.current = conversation;
       
-      logger.debug('ElevenLabs conversation setup complete with callbacks')
-      */
+      logger.debug('ElevenLabs conversation setup complete with callbacks');
 
     } catch (error) {
       logger.error('Failed to start conversation:', error);
       onError?.(error instanceof Error ? error.message : 'Failed to start conversation');
       setIsConnecting(false);
     }
-  }, [agentId, isConnected, isConnecting, onConnect, onDisconnect, onError, onMessage, initializeAudioContext]);
+  }, [agentId, isConnected, isConnecting, onConnect, onDisconnect, onError, onMessage, initializeAudioContext, context]);
 
   const endConversation = useCallback(async () => {
     if (conversationRef.current) {
