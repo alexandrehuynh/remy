@@ -271,12 +271,12 @@ export function VoiceAssistant({
             {/* Status Text */}
             {!isSidebarMode && (
               <div className="text-center space-y-2">
-                <p className={`${isCompactMode ? 'text-xs' : 'text-sm'} font-medium text-foreground`}>
+                <p className={`${isCompactMode ? 'text-xs' : 'text-sm'} font-medium text-white drop-shadow-lg`}>
                   {isCompactMode && isElevenLabsConnected ? displayText.slice(0, 50) + (displayText.length > 50 ? '...' : '') : getStatusText()}
                 </p>
                 
                 {!isElevenLabsConnected && !isElevenLabsConnecting && !isCompactMode && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-white/90 drop-shadow-md">
                     Ask for recipes, nutrition info, or cooking tips
                   </p>
                 )}

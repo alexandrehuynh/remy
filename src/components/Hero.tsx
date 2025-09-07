@@ -75,7 +75,7 @@ export function Hero({ onSearch, searchQuery = "", onSearchChange }: HeroProps) 
               What would you like to cook today?
             </h2>
             
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/70" />
                 <Input
@@ -90,7 +90,7 @@ export function Hero({ onSearch, searchQuery = "", onSearchChange }: HeroProps) 
               <Button 
                 onClick={handleSearch}
                 size="lg" 
-                className="px-8 py-6 text-lg bg-primary hover:bg-primary/90 transition-colors duration-200"
+                className="px-8 py-6 text-lg bg-primary hover:bg-primary/90 transition-colors duration-200 flex-shrink-0"
               >
                 <Search className="w-5 h-5 mr-2" />
                 Search
