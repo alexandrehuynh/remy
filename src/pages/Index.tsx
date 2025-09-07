@@ -52,7 +52,7 @@ const Index = () => {
 
           {/* Search summary */}
           <div className="text-center py-6">
-            <h2 className="text-2xl font-bold gradient-text mb-2">
+            <h2 className="text-2xl font-bold text-foreground mb-2">
               {searchQuery ? `Results for "${searchQuery}"` : `${selectedCategory} Recipes`}
             </h2>
           </div>
@@ -66,22 +66,17 @@ const Index = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredRecipes.map((recipe, index) => (
-                <div 
+              {filteredRecipes.map((recipe) => (
+                <RecipeCard
                   key={recipe.id}
-                  className="animate-fade-in"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <RecipeCard
-                    recipe={recipe}
-                    onClick={() => {
-                      console.log("Opening recipe:", recipe.title);
-                    }}
-                    onStartCooking={() => {
-                      navigate(`/cook/${recipe.id}`);
-                    }}
-                  />
-                </div>
+                  recipe={recipe}
+                  onClick={() => {
+                    console.log("Opening recipe:", recipe.title);
+                  }}
+                  onStartCooking={() => {
+                    navigate(`/cook/${recipe.id}`);
+                  }}
+                />
               ))}
             </div>
           )}
@@ -109,19 +104,19 @@ const Index = () => {
 
             {/* Stats Section */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="text-center p-6 bg-gradient-hero rounded-xl border border-primary/20 animate-fade-in">
-                <div className="text-3xl font-bold gradient-text mb-1">{demoRecipes.length}</div>
+              <div className="text-center p-6 bg-secondary/50 rounded-xl border border-border">
+                <div className="text-3xl font-bold text-primary mb-1">{demoRecipes.length}</div>
                 <div className="text-sm text-muted-foreground">Total Recipes</div>
               </div>
-              <div className="text-center p-6 bg-gradient-hero rounded-xl border border-primary/20 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+              <div className="text-center p-6 bg-secondary/50 rounded-xl border border-border">
                 <div className="text-3xl font-bold text-green-600 mb-1">12</div>
                 <div className="text-sm text-muted-foreground">Cooked Today</div>
               </div>
-              <div className="text-center p-6 bg-gradient-hero rounded-xl border border-primary/20 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              <div className="text-center p-6 bg-secondary/50 rounded-xl border border-border">
                 <div className="text-3xl font-bold text-red-500 mb-1">8</div>
                 <div className="text-sm text-muted-foreground">Favorites</div>
               </div>
-              <div className="text-center p-6 bg-gradient-hero rounded-xl border border-primary/20 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              <div className="text-center p-6 bg-secondary/50 rounded-xl border border-border">
                 <div className="text-3xl font-bold text-yellow-500 mb-1">4.8</div>
                 <div className="text-sm text-muted-foreground">Avg Rating</div>
               </div>

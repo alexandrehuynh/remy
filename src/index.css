@@ -2,21 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom animations for voice assistant */
-@keyframes slide-in-right {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-.animate-slide-in-right {
-  animation: slide-in-right 0.5s ease-out forwards;
-}
+/* Removed excessive animations for cleaner UI */
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
@@ -142,49 +128,41 @@ All colors MUST be HSL.
 }
 
 @layer components {
-  /* Voice Assistant Animations */
-  .voice-pulse {
-    @apply animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite];
-  }
-
+  /* Subtle voice feedback */
   .voice-listening {
-    @apply animate-[ping_1s_cubic-bezier(0,0,0.2,1)_infinite];
+    @apply opacity-80;
   }
 
-  /* Kitchen-friendly button variants */
+  /* Simplified button variants */
   .btn-hero {
-    @apply bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-warm hover:shadow-glow;
-    transition: var(--transition-smooth);
+    @apply bg-primary text-primary-foreground;
+    transition: all 0.2s ease-out;
   }
 
   .btn-cooking {
-    @apply bg-card text-card-foreground shadow-card hover:shadow-warm border border-border;
-    transition: var(--transition-smooth);
+    @apply bg-card text-card-foreground border border-border;
+    transition: all 0.2s ease-out;
   }
 
-  /* Timer animations */
+  /* Subtle timer indication */
   .timer-urgent {
-    @apply animate-[pulse_0.5s_cubic-bezier(0.4,0,0.6,1)_infinite];
     color: hsl(var(--timer));
+    @apply font-semibold;
   }
 
-  /* Recipe card hover effects */
+  /* Simplified recipe card */
   .recipe-card {
-    background: var(--gradient-card);
-    box-shadow: var(--shadow-card);
-    transition: var(--transition-smooth);
+    @apply bg-card border border-border;
+    transition: all 0.2s ease-out;
   }
 
   .recipe-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-warm);
+    @apply shadow-lg;
   }
 
-  /* Voice indicator ring */
+  /* Subtle voice indicator */
   .voice-ring {
-    @apply absolute inset-0 rounded-full;
-    background: radial-gradient(circle, hsl(var(--voice-active) / 0.3), transparent);
-    animation: voice-pulse 2s ease-in-out infinite;
+    @apply absolute inset-0 rounded-full bg-primary/10;
   }
 
   /* Large touch targets for kitchen use */
@@ -192,31 +170,17 @@ All colors MUST be HSL.
     @apply min-h-12 min-w-12 flex items-center justify-center;
   }
 
-  /* Beautiful gradient text */
+  /* Simple text styling */
   .gradient-text {
-    background: var(--gradient-sunset);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    @apply text-primary font-semibold;
   }
 }
 
 @layer utilities {
-  /* Custom animations */
-  @keyframes voice-pulse {
-    0%, 100% {
-      transform: scale(1);
-      opacity: 0.8;
-    }
-    50% {
-      transform: scale(1.1);
-      opacity: 0.4;
-    }
-  }
-
+  /* Minimal, purposeful animations */
   @keyframes slide-up {
     from {
-      transform: translateY(100%);
+      transform: translateY(20px);
       opacity: 0;
     }
     to {
@@ -226,6 +190,6 @@ All colors MUST be HSL.
   }
 
   .animate-slide-up {
-    animation: slide-up 0.3s ease-out;
+    animation: slide-up 0.2s ease-out;
   }
 }
