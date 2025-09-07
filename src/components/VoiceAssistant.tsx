@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Volume2, Phone, PhoneOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,6 +31,7 @@ export function VoiceAssistant({
 }: VoiceAssistantProps) {
   const [displayText, setDisplayText] = useState("Ready to talk with Chef Remy");
   const [messages, setMessages] = useState<string[]>([]);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
   const {
@@ -66,6 +67,13 @@ export function VoiceAssistant({
       });
     }
   });
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const handleVoiceToggle = async () => {
     logger.debug('[VoiceAssistant] Voice toggle clicked');
@@ -183,33 +191,41 @@ export function VoiceAssistant({
             </div>
           </div>
 
-          {/* Chat History - slides in when connected */}
+          {/* Chat History - slides in when connected with fixed height */}
           {isElevenLabsConnected && (
-            <div className="w-1/2 flex flex-col space-y-2 animate-slide-in-right">
-              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground border-b pb-2">
+            <div className="w-1/2 flex flex-col animate-slide-in-right">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground border-b pb-2 mb-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                 Conversation
               </div>
               
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {messages.length > 0 ? (
-                  messages.slice(-5).map((message, index) => (
-                    <div 
-                      key={index} 
-                      className={`text-xs p-2 rounded-lg ${
-                        message.startsWith('You:') 
-                          ? 'bg-blue-100 dark:bg-blue-900/20 ml-4' 
-                          : 'bg-gray-100 dark:bg-gray-800 mr-4'
-                      }`}
-                    >
-                      {message}
+              {/* Fixed height chat container with scroll */}
+              <div className="flex-1 h-48 bg-gray-50 dark:bg-gray-900/20 rounded-lg border overflow-hidden">
+                <div ref={chatContainerRef} className="h-full overflow-y-auto p-3 space-y-2 scroll-smooth">
+                  {messages.length > 0 ? (
+                    messages.map((message, index) => (
+                      <div 
+                        key={index} 
+                        className={`text-xs p-2 rounded-lg max-w-[85%] ${
+                          message.startsWith('You:') 
+                            ? 'bg-blue-500 text-white ml-auto' 
+                            : 'bg-white dark:bg-gray-800 border'
+                        }`}
+                      >
+                        <div className="font-medium text-[10px] opacity-70 mb-1">
+                          {message.startsWith('You:') ? 'You' : 'Chef Remy'}
+                        </div>
+                        <div>
+                          {message.replace(/^(You:|Chef Remy:)\s*/, '')}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-xs text-muted-foreground italic text-center py-8">
+                      Start talking to see your conversation here
                     </div>
-                  ))
-                ) : (
-                  <div className="text-xs text-muted-foreground italic text-center py-4">
-                    Start talking to see your conversation here
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           )}
