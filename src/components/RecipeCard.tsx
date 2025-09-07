@@ -45,12 +45,12 @@ export function RecipeCard({ recipe, onClick, onStartCooking }: RecipeCardProps)
           </Badge>
         </div>
         
-        <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
+        <p className="text-muted-foreground text-sm mb-3 line-clamp-2 flex-shrink-0">
           {recipe.description}
         </p>
         
-        <div className="space-y-3 flex-grow">
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex flex-col flex-grow">
+          <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />

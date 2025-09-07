@@ -13,6 +13,11 @@ import bananaBread from "@/assets/banana-bread.jpg";
 import chocolateBrownies from "@/assets/chocolate-brownies.jpg";
 import chickenStirFry from "@/assets/chicken-stir-fry.jpg";
 import smoothieBowl from "@/assets/smoothie-bowl.jpg";
+import avocadoToast from "@/assets/avocado-toast.jpg";
+import overnightOats from "@/assets/overnight-oats.jpg";
+import bltSandwich from "@/assets/blt-sandwich.jpg";
+import chickenQuesadilla from "@/assets/chicken-quesadilla.jpg";
+import berryParfait from "@/assets/berry-parfait.jpg";
 
 export interface Recipe {
   id: string;
@@ -517,7 +522,7 @@ export const demoRecipes: Recipe[] = [
     id: "8",
     title: "Avocado Toast with Poached Eggs",
     description: "Nutritious and Instagram-worthy breakfast with creamy avocado and perfectly poached eggs",
-    image: smoothieBowl,
+    image: avocadoToast,
     totalTime: 12,
     difficulty: "Easy",
     category: "Breakfast",
@@ -581,7 +586,7 @@ export const demoRecipes: Recipe[] = [
     id: "9",
     title: "Overnight Oats with Mixed Berries",
     description: "Prepare-ahead breakfast that's ready when you wake up",
-    image: bananaBread,
+    image: overnightOats,
     totalTime: 5,
     difficulty: "Easy",
     category: "Breakfast",
@@ -625,7 +630,7 @@ export const demoRecipes: Recipe[] = [
     id: "10",
     title: "Classic BLT Sandwich",
     description: "The perfect combination of crispy bacon, fresh lettuce, and ripe tomatoes",
-    image: capreseSalad,
+    image: bltSandwich,
     totalTime: 10,
     difficulty: "Easy",
     category: "Lunch",
@@ -680,7 +685,7 @@ export const demoRecipes: Recipe[] = [
     id: "11",
     title: "Chicken Quesadilla",
     description: "Crispy tortilla filled with seasoned chicken and melted cheese",
-    image: margheritaPizza,
+    image: chickenQuesadilla,
     totalTime: 15,
     difficulty: "Medium",
     category: "Lunch",
@@ -957,7 +962,7 @@ export const demoRecipes: Recipe[] = [
     id: "15",
     title: "Fresh Berry Parfait",
     description: "Light and refreshing layered dessert with yogurt, berries, and granola",
-    image: beefStew,
+    image: berryParfait,
     totalTime: 8,
     difficulty: "Easy",
     category: "Dessert",
