@@ -249,6 +249,41 @@ export function CookingMode() {
     });
   };
 
+  const handleRecipeComplete = () => {
+    // Mark all steps as completed
+    setCompletedSteps(new Set(recipe.steps.map((_, index) => index)));
+    
+    // Clear any active timers
+    setActiveTimers([]);
+    
+    // Show celebration notification
+    toast({
+      title: "🎉 Recipe Complete!",
+      description: (
+        <div className="space-y-2">
+          <p>Congratulations! You've successfully made <strong>{recipe.title}</strong></p>
+          <p className="text-sm text-muted-foreground">Redirecting to home in 3 seconds...</p>
+        </div>
+      ),
+      duration: 4000,
+    });
+    
+    // Update AI context with completion
+    if (contextUpdateFn) {
+      contextUpdateFn({
+        ...buildEnhancedContext(),
+        recipeStatus: 'completed',
+        completionTime: new Date().toISOString(),
+        finalMessage: `Recipe "${recipe.title}" has been successfully completed!`
+      });
+    }
+    
+    // Auto-redirect to home page after celebration
+    setTimeout(() => {
+      navigate('/');
+    }, 3000);
+  };
+
   const currentStepIngredients = currentStep.ingredients?.map(id => 
     recipe.ingredients.find(ing => ing.id === id)
   ).filter(Boolean) || [];
@@ -629,9 +664,7 @@ export function CookingMode() {
                   {currentStepIndex === recipe.steps.length - 1 ? (
                     <Button
                       className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                      onClick={() => {
-                        console.log("Cooking completed!");
-                      }}
+                      onClick={handleRecipeComplete}
                     >
                       Complete! 🎉
                     </Button>

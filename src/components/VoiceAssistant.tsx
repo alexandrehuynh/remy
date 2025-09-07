@@ -314,9 +314,9 @@ export function VoiceAssistant({
           {/* Chat History - different layouts based on mode */}
           {isElevenLabsConnected && !isCompactMode && (
             <div className={`${isSidebarMode ? 'w-full mt-3' : 'w-1/2'} flex flex-col ${!isSidebarMode ? 'animate-slide-in-right' : ''}`}>
-              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground border-b pb-2 mb-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                Conversation
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground bg-white/80 dark:bg-gray-800/80 px-3 py-2 rounded-lg border border-green-200 mb-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                Connected - Talk naturally!
               </div>
               
               {/* Fixed height chat container with scroll */}
@@ -326,16 +326,16 @@ export function VoiceAssistant({
                     messages.map((message, index) => (
                       <div 
                         key={index} 
-                        className={`text-xs p-2 rounded-lg max-w-[85%] ${
+                        className={`text-sm p-3 rounded-lg max-w-[85%] ${
                           message.startsWith('You:') 
                             ? 'bg-blue-500 text-white ml-auto' 
-                            : 'bg-white dark:bg-gray-800 border'
+                            : 'bg-white dark:bg-gray-800 border text-gray-900 dark:text-gray-100'
                         }`}
                       >
-                        <div className="font-medium text-[10px] opacity-70 mb-1">
+                        <div className="font-medium text-xs opacity-80 mb-1">
                           {message.startsWith('You:') ? 'You' : 'Chef Remy'}
                         </div>
-                        <div>
+                        <div className="leading-relaxed">
                           {message.replace(/^(You:|Chef Remy:)\s*/, '')}
                         </div>
                       </div>
