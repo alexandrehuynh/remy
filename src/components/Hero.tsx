@@ -43,11 +43,11 @@ export function Hero({ onSearch, searchQuery = "", onSearchChange }: HeroProps) 
         <div className="mb-8">
           <div className="flex items-center justify-center gap-4 mb-6">
             <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20">
-              <img 
-                src={ratChefIcon} 
-                alt="Chef Remy" 
-                className="w-12 h-12 object-contain"
-              />
+            <img 
+              src={ratChefIcon} 
+              alt="Chef Remy" 
+              className="w-12 h-12 object-cover rounded-full"
+            />
             </div>
             <div>
               <h1 className="text-5xl md:text-6xl font-bold text-white">
