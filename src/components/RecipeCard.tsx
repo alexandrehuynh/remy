@@ -22,17 +22,17 @@ export function RecipeCard({ recipe, onClick, onStartCooking }: RecipeCardProps)
 
   return (
     <Card 
-      className="recipe-card cursor-pointer group overflow-hidden"
+      className="recipe-card cursor-pointer group overflow-hidden h-full flex flex-col"
       onClick={onClick}
     >
-      <div className="aspect-[4/3] overflow-hidden">
+      <div className="aspect-[4/3] overflow-hidden flex-shrink-0">
         <img 
           src={recipe.image} 
           alt={recipe.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
       </div>
-      <CardContent className="p-4">
+      <CardContent className="p-4 flex-grow flex flex-col">
         <div className="flex items-start justify-between mb-2">
           <h3 className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
             {recipe.title}
@@ -49,7 +49,7 @@ export function RecipeCard({ recipe, onClick, onStartCooking }: RecipeCardProps)
           {recipe.description}
         </p>
         
-        <div className="space-y-3">
+        <div className="space-y-3 flex-grow">
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
@@ -69,17 +69,19 @@ export function RecipeCard({ recipe, onClick, onStartCooking }: RecipeCardProps)
           
           {/* Start Cooking Button */}
           {onStartCooking && (
-            <Button 
-              onClick={(e) => {
-                e.stopPropagation();
-                onStartCooking();
-              }}
-              className="w-full btn-hero"
-              size="sm"
-            >
-              <Play className="w-4 h-4 mr-2" />
-              Start Cooking
-            </Button>
+            <div className="mt-auto">
+              <Button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStartCooking();
+                }}
+                className="w-full btn-hero"
+                size="sm"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Start Cooking
+              </Button>
+            </div>
           )}
         </div>
       </CardContent>

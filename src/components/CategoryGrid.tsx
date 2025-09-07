@@ -14,7 +14,7 @@ export function CategoryGrid({ selectedCategory, onCategorySelect }: CategoryGri
         <p className="text-muted-foreground">Discover recipes by your favorite cooking styles</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-4 max-w-4xl mx-auto">
         {/* All Categories Option */}
         <Card 
           className={`cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg ${
@@ -24,10 +24,10 @@ export function CategoryGrid({ selectedCategory, onCategorySelect }: CategoryGri
           }`}
           onClick={() => onCategorySelect("All")}
         >
-          <CardContent className="p-6 text-center">
-            <div className="text-4xl mb-3">🍽️</div>
-            <h3 className="font-semibold text-lg mb-1">All Recipes</h3>
-            <p className="text-sm text-muted-foreground">Browse everything</p>
+          <CardContent className="p-4 text-center h-32 flex flex-col justify-center">
+            <div className="text-3xl mb-2">🍽️</div>
+            <h3 className="font-semibold text-base mb-1">All Recipes</h3>
+            <p className="text-xs text-muted-foreground">Browse everything</p>
           </CardContent>
         </Card>
 
@@ -44,12 +44,12 @@ export function CategoryGrid({ selectedCategory, onCategorySelect }: CategoryGri
               }`}
               onClick={() => onCategorySelect(category.name)}
             >
-              <CardContent className="p-6 text-center">
-                <div className="mb-3">
-                  <IconComponent className={`w-12 h-12 mx-auto ${category.color}`} />
+              <CardContent className="p-4 text-center h-32 flex flex-col justify-center">
+                <div className="mb-2">
+                  <IconComponent className={`w-8 h-8 mx-auto ${category.color}`} />
                 </div>
-                <h3 className="font-semibold text-lg mb-1">{category.name}</h3>
-                <p className="text-sm text-muted-foreground">{category.description}</p>
+                <h3 className="font-semibold text-base mb-1">{category.name}</h3>
+                <p className="text-xs text-muted-foreground">{category.description}</p>
               </CardContent>
             </Card>
           );

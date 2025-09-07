@@ -71,19 +71,19 @@ export function Hero({ onSearch, searchQuery = "", onSearchChange }: HeroProps) 
         {/* Search Section */}
         <div className="mb-8">
           <div className="max-w-2xl mx-auto space-y-4">
-            <h2 className="text-2xl md:text-3xl font-semibold text-white/95 mb-6">
+            <h2 className="text-2xl md:text-3xl font-semibold text-white mb-6 drop-shadow-lg">
               What would you like to cook today?
             </h2>
             
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/60" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/70" />
                 <Input
                   placeholder="Search recipes, ingredients, or cooking techniques..."
                   value={localSearch}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  className="pl-12 py-6 text-lg bg-white/10 backdrop-blur-lg border-white/20 text-white placeholder:text-white/60 focus:bg-white/20 transition-colors duration-200"
+                  className="pl-10 py-6 text-lg bg-white/15 backdrop-blur-lg border-white/30 text-white placeholder:text-white/70 focus:bg-white/25 transition-colors duration-200"
                 />
               </div>
               
