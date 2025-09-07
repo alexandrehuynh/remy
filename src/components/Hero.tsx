@@ -83,7 +83,7 @@ export function Hero({ onSearch, searchQuery = "", onSearchChange }: HeroProps) 
                   value={localSearch}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  className="pl-10 py-6 text-lg bg-white/15 backdrop-blur-lg border-white/30 text-white placeholder:text-white/70 focus:bg-white/25 transition-colors duration-200"
+                  className="pl-9 py-6 text-lg bg-white/15 backdrop-blur-lg border-white/30 text-white placeholder:text-white/70 focus:bg-white/25 transition-colors duration-200"
                 />
               </div>
               
